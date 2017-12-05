@@ -1,0 +1,26 @@
+@import '../../shared/styles/variables';
+
+:host {
+    font-size:12px;
+    display: block;
+}
+.oauth-scope {   
+    display: inline-block;
+    margin:0;
+    padding:1px 5px;
+    border-radius: 2px;
+    color:#fff;
+    background-color: $basic-color;
+    margin: 2px 4px 2px 0;
+
+    &.read {
+        background-color: $get-color;
+    }
+
+    &.write {
+        background-color: $post-color;
+    }
+    &.partner {
+        background-color: $patch-color;
+    }
+}

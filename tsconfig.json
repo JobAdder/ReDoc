@@ -21,7 +21,6 @@
       "should"
     ]
   },
-  "compileOnSave": false,
   "exclude": [
     "node_modules",
     "dist",

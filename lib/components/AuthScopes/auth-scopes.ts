@@ -7,6 +7,7 @@ import { ComponentParser } from '../../services/component-parser.service';
 @Component({
   selector: 'auth-scopes',
   templateUrl: './auth-scopes.html',
+  styleUrls: ['./auth-scopes.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AuthScopes extends BaseComponent implements OnInit {

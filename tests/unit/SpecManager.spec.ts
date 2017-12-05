@@ -123,7 +123,7 @@ describe('Utils', () => {
         let scopes = specMgr.getOperationScopes('/paths/test3/get/security');
         scopes.length.should.be.equal(1);
         scopes[0].name.should.be.equal('write:account');
-        scopes[0].description.should.be.equal('modify your account');\
+        scopes[0].description.should.be.equal('modify your account');
       });
 
       it('should handle the case when no security is present', () => {

@@ -164,10 +164,10 @@ export class SpecManager {
          Object.keys(scopeObj).forEach(key => {
             let val = scopeObj[key];
             let desc = getSecurityDefinition(authName, val);
-
             // don't add if the security obj doesn't exist in the security definitions
             if (desc) {
-              scopes.push({name: val, description: desc});
+              let scopeType = val.split(':')[0];
+              scopes.push({name: val, description: desc, type: scopeType});
             }
         });
     }
