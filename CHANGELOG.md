@@ -1,3 +1,202 @@
+<a name="2.0.0-alpha.28"></a>
+# [2.0.0-alpha.28](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.27...v2.0.0-alpha.28) (2018-06-29)
+
+
+### Bug Fixes
+
+* inline markdown regression ([e1c9e19](https://github.com/Rebilly/ReDoc/commit/e1c9e19))
+
+
+
+<a name="2.0.0-alpha.27"></a>
+# [2.0.0-alpha.27](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.25...v2.0.0-alpha.27) (2018-06-29)
+
+
+### Bug Fixes
+
+* change default font weight to 400 ([11947ed](https://github.com/Rebilly/ReDoc/commit/11947ed))
+* do not uppercase menu items by default ([0d45cc2](https://github.com/Rebilly/ReDoc/commit/0d45cc2))
+* fix link colors in json samples ([aaaa899](https://github.com/Rebilly/ReDoc/commit/aaaa899))
+
+
+### Features
+
+* display Value instead of Enum for one-item enum ([78fa312](https://github.com/Rebilly/ReDoc/commit/78fa312))
+* experimental temporary support for tags in md ([06ef51c](https://github.com/Rebilly/ReDoc/commit/06ef51c))
+* theme hooks experimental hooks ([55bd853](https://github.com/Rebilly/ReDoc/commit/55bd853))
+
+
+
+<a name="2.0.0-alpha.26"></a>
+# [2.0.0-alpha.26](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.25...v2.0.0-alpha.26) (2018-06-28)
+
+
+### Bug Fixes
+
+* change default font weight to 400 ([11947ed](https://github.com/Rebilly/ReDoc/commit/11947ed))
+* do not uppercase menu items by default ([0d45cc2](https://github.com/Rebilly/ReDoc/commit/0d45cc2))
+* fix link colors in json samples ([aaaa899](https://github.com/Rebilly/ReDoc/commit/aaaa899))
+
+
+### Features
+
+* display Value instead of Enum for one-item enum ([78fa312](https://github.com/Rebilly/ReDoc/commit/78fa312))
+* experimental temporary support for tags in md ([06ef51c](https://github.com/Rebilly/ReDoc/commit/06ef51c))
+
+
+
+<a name="2.0.0-alpha.24"></a>
+# [2.0.0-alpha.24](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.23...v2.0.0-alpha.24) (2018-06-01)
+
+
+### Bug Fixes
+
+* temporary downgrade marked as it introduced breaking changes and a few bugs ([902f97a](https://github.com/Rebilly/ReDoc/commit/902f97a))
+
+
+
+<a name="2.0.0-alpha.23"></a>
+# [2.0.0-alpha.23](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.22...v2.0.0-alpha.23) (2018-05-31)
+
+
+### Bug Fixes
+
+* **cli:** make positional arguments required and handle errors in serve and bundle manually ([#518](https://github.com/Rebilly/ReDoc/issues/518)) ([370d08a](https://github.com/Rebilly/ReDoc/commit/370d08a))
+* fix typings on npm ([d957ad7](https://github.com/Rebilly/ReDoc/commit/d957ad7))
+* fix vertical line misaligned in firefox ([bde08f1](https://github.com/Rebilly/ReDoc/commit/bde08f1)), closes [#503](https://github.com/Rebilly/ReDoc/issues/503)
+* mergeAllOf takes items into account ([#511](https://github.com/Rebilly/ReDoc/issues/511)) ([47b2177](https://github.com/Rebilly/ReDoc/commit/47b2177))
+
+
+
+<a name="2.0.0-alpha.22"></a>
+# [2.0.0-alpha.22](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.21...v2.0.0-alpha.22) (2018-05-29)
+
+
+### Bug Fixes
+
+* **cli:** create directories when a path is specified in the --output option ([#513](https://github.com/Rebilly/ReDoc/issues/513)) ([ac7372b](https://github.com/Rebilly/ReDoc/commit/ac7372b)), closes [#512](https://github.com/Rebilly/ReDoc/issues/512)
+* **cli:** return 1 as exit code if an error happens in the cli ([#516](https://github.com/Rebilly/ReDoc/issues/516)) ([720c304](https://github.com/Rebilly/ReDoc/commit/720c304))
+* fix font-weight inconsistency ([6ea2b7b](https://github.com/Rebilly/ReDoc/commit/6ea2b7b)), closes [#506](https://github.com/Rebilly/ReDoc/issues/506)
+* HEAD http verb support in menu badges ([2eb1952](https://github.com/Rebilly/ReDoc/commit/2eb1952)), closes [#493](https://github.com/Rebilly/ReDoc/issues/493)
+* more descriptive message for wrong discriminator use ([3c6de2c](https://github.com/Rebilly/ReDoc/commit/3c6de2c)), closes [#505](https://github.com/Rebilly/ReDoc/issues/505)
+
+
+### Features
+
+* add new experimental option unstable_ignoreMimeParameters ([d162bab](https://github.com/Rebilly/ReDoc/commit/d162bab))
+* support x-discriminator for OpenAPI 2 ([aaff311](https://github.com/Rebilly/ReDoc/commit/aaff311)), closes [#496](https://github.com/Rebilly/ReDoc/issues/496)
+
+
+
+<a name="2.0.0-alpha.21"></a>
+# [2.0.0-alpha.21](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.20...v2.0.0-alpha.21) (2018-05-28)
+
+
+### Bug Fixes
+
+* add tslib dependency ([8e1a5cb](https://github.com/Rebilly/ReDoc/commit/8e1a5cb))
+* **cli:** escape \u2029 \u2028 characters ([5018473](https://github.com/Rebilly/ReDoc/commit/5018473)), closes [#475](https://github.com/Rebilly/ReDoc/issues/475)
+* reduce search index size ([a1fa4b4](https://github.com/Rebilly/ReDoc/commit/a1fa4b4))
+* replace "oops" with field name 🙈 ([6b1e8e7](https://github.com/Rebilly/ReDoc/commit/6b1e8e7))
+* specify caption-side ([64801b0](https://github.com/Rebilly/ReDoc/commit/64801b0)), closes [#509](https://github.com/Rebilly/ReDoc/issues/509)
+
+
+### Features
+
+* export TypeScript typings ([9115be8](https://github.com/Rebilly/ReDoc/commit/9115be8))
+* new theme colors: code and codeBg ([f8b793d](https://github.com/Rebilly/ReDoc/commit/f8b793d))
+* new theme option: nestingSpacing ([782ef77](https://github.com/Rebilly/ReDoc/commit/782ef77))
+
+
+
+<a name="2.0.0-alpha.20"></a>
+# [2.0.0-alpha.20](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.19...v2.0.0-alpha.20) (2018-05-14)
+
+
+### Bug Fixes
+
+* fix worker is not defined in lib bundle ([6a5513e](https://github.com/Rebilly/ReDoc/commit/6a5513e))
+
+
+
+<a name="2.0.0-alpha.19"></a>
+# [2.0.0-alpha.19](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.18...v2.0.0-alpha.19) (2018-05-14)
+
+
+### Bug Fixes
+
+* change look of additionalProperties ([126c6a6](https://github.com/Rebilly/ReDoc/commit/126c6a6))
+* disable chrome tap-highlight on mobile ([09cbe88](https://github.com/Rebilly/ReDoc/commit/09cbe88))
+* fix [@observer](https://github.com/observer) on PureComponent warning ([afb11d6](https://github.com/Rebilly/ReDoc/commit/afb11d6))
+* fix build caused by new babel decorators syntax, fixes [#487](https://github.com/Rebilly/ReDoc/issues/487) ([01f575c](https://github.com/Rebilly/ReDoc/commit/01f575c))
+* fix prism lang dependencies, fixes [#467](https://github.com/Rebilly/ReDoc/issues/467) ([42cf18e](https://github.com/Rebilly/ReDoc/commit/42cf18e))
+* fix spelling in error message ([#455](https://github.com/Rebilly/ReDoc/issues/455)) ([64119c4](https://github.com/Rebilly/ReDoc/commit/64119c4))
+* limit height of discriminator dropdown, fixes [#484](https://github.com/Rebilly/ReDoc/issues/484) ([6d1a9e5](https://github.com/Rebilly/ReDoc/commit/6d1a9e5))
+* path parameters are not correctly override, fixes [#481](https://github.com/Rebilly/ReDoc/issues/481) ([2cf4c3c](https://github.com/Rebilly/ReDoc/commit/2cf4c3c))
+
+
+### Features
+
+* display scope description as markdown, fixes [#466](https://github.com/Rebilly/ReDoc/issues/466) ([0d6deff](https://github.com/Rebilly/ReDoc/commit/0d6deff))
+
+
+
+<a name="2.0.0-alpha.18"></a>
+# [2.0.0-alpha.18](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.17...v2.0.0-alpha.18) (2018-03-23)
+
+
+### Bug Fixes
+
+* fix logo width ([384c883](https://github.com/Rebilly/ReDoc/commit/384c883))
+* modify the peerDependencies to reflect the need for react 16.3 ([b29c329](https://github.com/Rebilly/ReDoc/commit/b29c329))
+* scroll to section sooner when SSR + simplify item ids ([d1d8042](https://github.com/Rebilly/ReDoc/commit/d1d8042))
+* **cli:** don't wait for content loaded in bundled HTML ([d9ee2d0](https://github.com/Rebilly/ReDoc/commit/d9ee2d0))
+
+<a name="2.0.0-alpha.17"></a>
+# [2.0.0-alpha.17](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.16...v2.0.0-alpha.17) (2018-03-21)
+
+
+### Bug Fixes
+
+* css fix + update theme ([05403a7](https://github.com/Rebilly/ReDoc/commit/05403a7))
+* **cli:** allow to set url to the spec in SSR mode ([c9c6bc5](https://github.com/Rebilly/ReDoc/commit/c9c6bc5))
+* **cli:** fix crash ([8891f5c](https://github.com/Rebilly/ReDoc/commit/8891f5c))
+* **cli:** fix output option type ([c729c6c](https://github.com/Rebilly/ReDoc/commit/c729c6c))
+* **cli:** rename redoc-cli bin ([06b5a00](https://github.com/Rebilly/ReDoc/commit/06b5a00))
+* fix second-level heading in description ([a084532](https://github.com/Rebilly/ReDoc/commit/a084532))
+* make field type color more dark (closes [#439](https://github.com/Rebilly/ReDoc/issues/439)) ([d27e61a](https://github.com/Rebilly/ReDoc/commit/d27e61a))
+
+
+### Features
+
+* **cli:** add --template option ([b7afce9](https://github.com/Rebilly/ReDoc/commit/b7afce9))
+* **cli:** add options to specify redoc options ([2732c89](https://github.com/Rebilly/ReDoc/commit/2732c89))
+* **cli:** add title option to bundle ([bb8a678](https://github.com/Rebilly/ReDoc/commit/bb8a678))
+* add more options to theme ([cbce28a](https://github.com/Rebilly/ReDoc/commit/cbce28a))
+
+
+
+<a name="1.21.2"></a>
+## [1.21.2](https://github.com/Rebilly/ReDoc/compare/v1.21.1...v1.21.2) (2018-02-26)
+
+
+### Bug Fixes
+
+* missing properties when using complex allOf (regression) ([6ce9245](https://github.com/Rebilly/ReDoc/commit/6ce9245)), closes [#422](https://github.com/Rebilly/ReDoc/issues/422)
+
+
+
+<a name="1.21.1"></a>
+## [1.21.1](https://github.com/Rebilly/ReDoc/compare/v1.21.0...v1.21.1) (2018-02-23)
+
+
+### Bug Fixes
+
+* avoid endless recursion in schema-walker in some cases ([309cc23](https://github.com/Rebilly/ReDoc/commit/309cc23)), closes [#418](https://github.com/Rebilly/ReDoc/issues/418) [#395](https://github.com/Rebilly/ReDoc/issues/395)
+* fix crash when discriminator is used incorrectly ([b1d928d](https://github.com/Rebilly/ReDoc/commit/b1d928d))
+
+
+
 <a name="1.21.0"></a>
 # [1.21.0](https://github.com/Rebilly/ReDoc/compare/v1.20.0...v1.21.0) (2018-02-18)
 
@@ -30,6 +229,233 @@
 ### Deprecations
 * Dropped bower support. No more dist files on the `releases` branch.
 
+
+
+<a name="2.0.0-alpha.15"></a>
+# [2.0.0-alpha.15](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.14...v2.0.0-alpha.15) (2018-03-16)
+
+
+### Bug Fixes
+
+* fix broken css after installing polished ([6018042](https://github.com/Rebilly/Redoc/commit/6018042))
+
+
+### Features
+
+* more advanced theme engine ([1df690a](https://github.com/Rebilly/Redoc/commit/1df690a))
+
+
+
+<a name="2.0.0-alpha.14"></a>
+# [2.0.0-alpha.14](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.13...v2.0.0-alpha.14) (2018-03-15)
+
+
+### Bug Fixes
+
+* fix CLI crash + build it on travis ([7769ba8](https://github.com/Rebilly/Redoc/commit/7769ba8))
+
+
+
+<a name="2.0.0-alpha.13"></a>
+# [2.0.0-alpha.13](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.12...v2.0.0-alpha.13) (2018-03-15)
+
+
+### Bug Fixes
+
+* A couple minor bug fixes ([#436](https://github.com/Rebilly/Redoc/issues/436)) ([5dc21af](https://github.com/Rebilly/Redoc/commit/5dc21af))
+* add extra null-check + warning ([8757fa5](https://github.com/Rebilly/Redoc/commit/8757fa5))
+* add logo width to the theme ([28f2391](https://github.com/Rebilly/Redoc/commit/28f2391))
+* align logo by center ([18ec3ac](https://github.com/Rebilly/Redoc/commit/18ec3ac))
+* discriminator dropdown showing incorrect field if sorted ([bcf39dc](https://github.com/Rebilly/Redoc/commit/bcf39dc))
+* fix crash when referencing non-existing security scheme ([1f7fc44](https://github.com/Rebilly/Redoc/commit/1f7fc44))
+* fix overflowing content in JSON samples ([02c2413](https://github.com/Rebilly/Redoc/commit/02c2413))
+* fix right-panel blinking when scrolling + css improvements ([a78f9ab](https://github.com/Rebilly/Redoc/commit/a78f9ab))
+* fix search-indexing for SSR ([1428fb5](https://github.com/Rebilly/Redoc/commit/1428fb5))
+* fix the media queries utils so it gets the values from the current theme ([#420](https://github.com/Rebilly/Redoc/issues/420)) ([3924d3c](https://github.com/Rebilly/Redoc/commit/3924d3c))
+* fix worker import ([4896346](https://github.com/Rebilly/Redoc/commit/4896346))
+* make ReactStandalone react on props changes ([0cb0af2](https://github.com/Rebilly/Redoc/commit/0cb0af2))
+* merge inner properties of allOf ([8926dd4](https://github.com/Rebilly/Redoc/commit/8926dd4))
+* one-of dropdown not switching ([0f1b6a6](https://github.com/Rebilly/Redoc/commit/0f1b6a6))
+* referenced header name is empty ([13165fb](https://github.com/Rebilly/Redoc/commit/13165fb))
+* skipReadOnly/skipWritOnly not passing down to nested array ([6df8127](https://github.com/Rebilly/Redoc/commit/6df8127))
+* skipReadOnly/skipWritOnly not passing down to nested OneOf ([2462639](https://github.com/Rebilly/Redoc/commit/2462639))
+* various search fixes ([b797c96](https://github.com/Rebilly/Redoc/commit/b797c96))
+* writeOnly not respected in response samples ([87abdf7](https://github.com/Rebilly/Redoc/commit/87abdf7))
+
+
+### Features
+
+* add clear icon to searchbox ([825162e](https://github.com/Rebilly/Redoc/commit/825162e))
+* add hideDownloadButton option ([8dbe938](https://github.com/Rebilly/Redoc/commit/8dbe938))
+* add marker ([1ff2bd8](https://github.com/Rebilly/Redoc/commit/1ff2bd8))
+* arrow navigation in search results ([fe3245a](https://github.com/Rebilly/Redoc/commit/fe3245a))
+* basis search ([6990cd2](https://github.com/Rebilly/Redoc/commit/6990cd2))
+* ReDoc CLI ✨ ([390f6c1](https://github.com/Rebilly/Redoc/commit/390f6c1))
+* reqired-first sort order for params ([ecf33d2](https://github.com/Rebilly/Redoc/commit/ecf33d2))
+* serialize search-index ([e94f842](https://github.com/Rebilly/Redoc/commit/e94f842))
+
+
+
+<a name="2.0.0-alpha.12"></a>
+# [2.0.0-alpha.12](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.11...v2.0.0-alpha.12) (2018-02-07)
+
+
+### Bug Fixes
+
+* basic responsiveness ([a29c3cc](https://github.com/Rebilly/Redoc/commit/a29c3cc))
+* crash in MarkdownRenderer on non-string ([dead161](https://github.com/Rebilly/Redoc/commit/dead161))
+* discriminator fix ([ff3bb24](https://github.com/Rebilly/Redoc/commit/ff3bb24))
+* filter out non-existing security schemas + warn ([ee822f6](https://github.com/Rebilly/Redoc/commit/ee822f6))
+* fix oneOf title for array ([1f3701d](https://github.com/Rebilly/Redoc/commit/1f3701d))
+* fix tbody > tr nesting warning ([a3cbb14](https://github.com/Rebilly/Redoc/commit/a3cbb14))
+* improve copy tooltip perf ([29207cf](https://github.com/Rebilly/Redoc/commit/29207cf))
+* resolve menu synchronization issue (use proper throttle) ([84d1c7b](https://github.com/Rebilly/Redoc/commit/84d1c7b))
+
+
+### Features
+
+* responsive side menu ([3aab2d9](https://github.com/Rebilly/Redoc/commit/3aab2d9))
+
+
+
+<a name="2.0.0-alpha.11"></a>
+# [2.0.0-alpha.11](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.10...v2.0.0-alpha.11) (2018-01-29)
+
+
+### Bug Fixes
+
+* courier misspelling ([#409](https://github.com/Rebilly/Redoc/issues/409)) ([96fb7ce](https://github.com/Rebilly/Redoc/commit/96fb7ce))
+* crash on 2-level md heading at the beginning ([e9f23f7](https://github.com/Rebilly/Redoc/commit/e9f23f7))
+* make active tab more clear ([4b5df22](https://github.com/Rebilly/Redoc/commit/4b5df22))
+* perfect scroll not working ([199f240](https://github.com/Rebilly/Redoc/commit/199f240))
+* use array items example ([12f79f0](https://github.com/Rebilly/Redoc/commit/12f79f0)), closes [#408](https://github.com/Rebilly/Redoc/issues/408)
+* wrap text in code samples ([6c71a66](https://github.com/Rebilly/Redoc/commit/6c71a66))
+
+
+### Features
+
+* port "copy to clipboard" / "expand/collapse all" functionality ([5bb0bdf](https://github.com/Rebilly/Redoc/commit/5bb0bdf)), closes [#410](https://github.com/Rebilly/Redoc/issues/410)
+
+
+
+<a name="2.0.0-alpha.9"></a>
+# [2.0.0-alpha.9](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.8...v2.0.0-alpha.9) (2018-01-11)
+
+
+### Bug Fixes
+
+* handle scrollYOffset in ScrollService ([dcab770](https://github.com/Rebilly/Redoc/commit/dcab770))
+
+
+
+<a name="2.0.0-alpha.8"></a>
+# [2.0.0-alpha.8](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.7...v2.0.0-alpha.8) (2018-01-10)
+
+
+### Bug Fixes
+
+* undo section id + some minor fixes ([0253c5d](https://github.com/Rebilly/Redoc/commit/0253c5d))
+
+
+
+<a name="2.0.0-alpha.7"></a>
+# [2.0.0-alpha.7](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.6...v2.0.0-alpha.7) (2018-01-10)
+
+
+### Bug Fixes
+
+* add id attr to headers to work before react is loaded if ssr ([1743453](https://github.com/Rebilly/Redoc/commit/1743453))
+* crate spec as data/base64 link when ssr ([33678e6](https://github.com/Rebilly/Redoc/commit/33678e6))
+* example value is not showed if it is false ([9756364](https://github.com/Rebilly/Redoc/commit/9756364))
+
+
+
+<a name="2.0.0-alpha.6"></a>
+# [2.0.0-alpha.6](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.5...v2.0.0-alpha.6) (2018-01-10)
+
+
+### Bug Fixes
+
+* allOf and deref exit not only named refs ([435cccd](https://github.com/Rebilly/Redoc/commit/435cccd))
+* do not ignore path level parameters ([14f8408](https://github.com/Rebilly/Redoc/commit/14f8408))
+* improve rendering of types ([17da7b7](https://github.com/Rebilly/Redoc/commit/17da7b7))
+* move title propagation to the correct place ([0b0bc99](https://github.com/Rebilly/Redoc/commit/0b0bc99))
+* owerwrite text-align to left ([bfee3ed](https://github.com/Rebilly/Redoc/commit/bfee3ed))
+
+
+### Features
+
+* initial display security requirements ([50e2a58](https://github.com/Rebilly/Redoc/commit/50e2a58))
+
+
+
+<a name="2.0.0-alpha.5"></a>
+# [2.0.0-alpha.5](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.4...v2.0.0-alpha.5) (2017-12-07)
+
+
+### Bug Fixes
+
+* correct pointer for the schema ([4ae1574](https://github.com/Rebilly/Redoc/commit/4ae1574))
+* bundle in reftools in lib build (do not crash on prod builds in create-react-app) ([57129d3](https://github.com/Rebilly/Redoc/commit/57129d3))
+
+
+<a name="2.0.0-alpha.4"></a>
+# [2.0.0-alpha.4](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.3...v2.0.0-alpha.4) (2017-11-24)
+
+
+### Bug Fixes
+
+* add ellipsis for menu items with long words ([3421be2](https://github.com/Rebilly/Redoc/commit/3421be2))
+* crashes on some dereferencing/allOf merging cases ([335deb9](https://github.com/Rebilly/Redoc/commit/335deb9))
+* do not auto-append security-definitions if they are not in the spec ([426e5b6](https://github.com/Rebilly/Redoc/commit/426e5b6))
+* don't display operations without tags as tag items in menu ([ca81b6d](https://github.com/Rebilly/Redoc/commit/ca81b6d))
+
+
+
+<a name="2.0.0-alpha.3"></a>
+# [2.0.0-alpha.3](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.2...v2.0.0-alpha.3) (2017-11-23)
+
+
+### Bug Fixes
+
+* crash when $ref is url encoded ([bdf6079](https://github.com/Rebilly/Redoc/commit/bdf6079))
+* make oneOf not skip fields defined alongside ([8680775](https://github.com/Rebilly/Redoc/commit/8680775))
+
+
+
+<a name="2.0.0-alpha.2"></a>
+# 2.0.0-alpha.2 (2017-11-23)
+
+### Bug Fixes
+* Fix crash when using type `file` in OpenAPI 2.0 in some places
+
+<a name="2.0.0-alpha.1"></a>
+# 2.0.0-alpha.1 (2017-11-23)
+
+Complete rewrite of ReDoc using React so here only major changes are listed.
+Complete rewrite also means that this rewrite may introduce issues, but they should be resolved before `2.0.0`.
+
+### Features
+
+- Basic Support for OpenAPI 3
+- Usage as a React component
+
+### Deprecations
+
+- Fonts are not loaded by ReDoc so you should load them. Default fonts can be loaded as bellow:
+
+```html
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" rel="stylesheet">
+```
+- no more bower releases
+- no more GitHub pages-based CDN. Use [unpkg.com](https://unpkg.com/) to access ReDoc releases
+
+
+### Known Regression (will be resolved before leaving alpha stage)
+- `lazyLoading` option not implemented yet
+- Copying to clipboard of samples not implemented yet
+- Search not implemented yet
+
 <a name="1.19.3"></a>
 ## [1.19.3](https://github.com/Rebilly/ReDoc/compare/v1.19.2...v1.19.3) (2017-11-16)
 
@@ -50,11 +476,19 @@
 
 <a name="1.19.1"></a>
 # [1.19.1](https://github.com/Rebilly/ReDoc/compare/v1.19.0...v1.19.1) (2017-10-02)
+<a name="2.0.0-alpha.16"></a>
+# [2.0.0-alpha.16](https://github.com/Rebilly/Redoc/compare/v2.0.0-alpha.15...v2.0.0-alpha.16) (2018-03-18)
 
 
 ### Bug Fixes
 
-* snapshot crashing on `constructor` prop ([04e8606](https://github.com/Rebilly/ReDoc/commit/04e8606)), closes [#341](https://github.com/Rebilly/ReDoc/issues/341)
+* move cli to a separate npm package ([95c7585](https://github.com/Rebilly/Redoc/commit/95c7585))
+* prefer `.extend` over `styled()` to make styles more predictable ([ed20ac1](https://github.com/Rebilly/Redoc/commit/ed20ac1))
+
+
+### Features
+
+* use new Context API for options ([e022349](https://github.com/Rebilly/Redoc/commit/e022349))
 
 
 <a name="1.19.0"></a>
