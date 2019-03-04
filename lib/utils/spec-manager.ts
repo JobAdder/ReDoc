@@ -169,7 +169,7 @@ export class SpecManager {
             let desc = getSecurityDefinition(authName, val);
             // don't add if the security obj doesn't exist in the security definitions
             if (desc) {
-              let scopeType = val.split(':')[0];
+              let scopeType = val.split('_')[0];
               scopes.push({name: val, description: desc, type: scopeType});
             }
         });
