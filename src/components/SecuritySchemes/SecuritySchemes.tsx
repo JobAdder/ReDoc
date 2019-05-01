@@ -2,8 +2,7 @@ import * as React from 'react';
 
 import { SecuritySchemesModel } from '../../services/models';
 
-import { H2, ShareLink } from '../../common-elements';
-import styled from '../../styled-components';
+import { H2, MiddlePanel, Row, Section, ShareLink } from '../../common-elements';
 import { OpenAPISecurityScheme } from '../../types';
 import { Markdown } from '../Markdown/Markdown';
 import { StyledMarkdownBlock } from '../Markdown/styled.elements';
@@ -14,16 +13,6 @@ const AUTH_TYPES = {
   http: 'HTTP',
   openIdConnect: 'Open ID Connect',
 };
-
-const AuthTable = styled.table`
-  ul > li {
-    margin: 0.5em 0 !important;
-  }
-
-  th {
-    text-transform: capitalize;
-  }
-`;
 
 export interface OAuthFlowProps {
   type: string;
@@ -72,21 +61,17 @@ export class OAuthFlow extends React.PureComponent<OAuthFlowProps> {
 }
 
 export interface SecurityDefsProps {
-  securitySchemes?: SecuritySchemesModel;
+  securitySchemes: SecuritySchemesModel;
 }
 
 export class SecurityDefs extends React.PureComponent<SecurityDefsProps> {
   render() {
-    if (!this.props.securitySchemes) {
-      return null;
-    }
-
-    return (
-      <div>
-        {this.props.securitySchemes.schemes.map(scheme => (
-          <div data-section-id={scheme.sectionId} key={scheme.id}>
+    return this.props.securitySchemes.schemes.map(scheme => (
+      <Section id={scheme.sectionId} key={scheme.id}>
+        <Row>
+          <MiddlePanel>
             <H2>
-              <ShareLink href={'#' + scheme.sectionId} />
+              <ShareLink to={scheme.sectionId} />
               {scheme.id}
             </H2>
             <Markdown source={scheme.description || ''} />
@@ -133,9 +118,9 @@ export class SecurityDefs extends React.PureComponent<SecurityDefsProps> {
                 </tbody>
               </table>
             </StyledMarkdownBlock>
-          </div>
-        ))}
-      </div>
-    );
+          </MiddlePanel>
+        </Row>
+      </Section>
+    ));
   }
 }

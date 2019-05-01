@@ -1,9 +1,8 @@
 import * as marked from 'marked';
-import slugify from 'slugify';
 
-import { highlight, html2Str } from '../utils';
+import { highlight, safeSlugify } from '../utils';
 import { AppStore } from './AppStore';
-import { SECTION_ATTR } from './MenuStore';
+import { RedocNormalizedOptions } from './RedocNormalizedOptions';
 
 const renderer = new marked.Renderer();
 
@@ -14,19 +13,24 @@ marked.setOptions({
   },
 });
 
-export const LEGACY_REGEXP = '^\\s*<!-- ReDoc-Inject:\\s+?{component}\\s+?-->\\s*$';
-export const MDX_COMPONENT_REGEXP = '^\\s*<{component}\\s*?/>\\s*$';
+export const LEGACY_REGEXP = '^ {0,3}<!-- ReDoc-Inject:\\s+?<({component}).*?/?>\\s+?-->\\s*$';
+
+// prettier-ignore
+export const MDX_COMPONENT_REGEXP = '(?:^ {0,3}<({component})([\\s\\S]*?)>([\\s\\S]*?)</\\2>' // with children
+  + '|^ {0,3}<({component})([\\s\\S]*?)(?:/>|\\n{2,}))'; // self-closing
+
 export const COMPONENT_REGEXP = '(?:' + LEGACY_REGEXP + '|' + MDX_COMPONENT_REGEXP + ')';
 
 export interface MDXComponentMeta {
   component: React.ComponentType;
   propsSelector: (store?: AppStore) => any;
-  attrs?: object;
+  props?: object;
 }
 
 export interface MarkdownHeading {
   id: string;
   name: string;
+  level: number;
   items?: MarkdownHeading[];
   description?: string;
 }
@@ -36,13 +40,18 @@ export function buildComponentComment(name: string) {
 }
 
 export class MarkdownRenderer {
+  static containsComponent(rawText: string, componentName: string) {
+    const compRegexp = new RegExp(COMPONENT_REGEXP.replace(/{component}/g, componentName), 'gmi');
+    return compRegexp.test(rawText);
+  }
+
   headings: MarkdownHeading[] = [];
   currentTopHeading: MarkdownHeading;
 
   private headingEnhanceRenderer: marked.Renderer;
   private originalHeadingRule: typeof marked.Renderer.prototype.heading;
 
-  constructor() {
+  constructor(public options?: RedocNormalizedOptions) {
     this.headingEnhanceRenderer = new marked.Renderer();
     this.originalHeadingRule = this.headingEnhanceRenderer.heading.bind(
       this.headingEnhanceRenderer,
@@ -52,12 +61,14 @@ export class MarkdownRenderer {
 
   saveHeading(
     name: string,
+    level: number,
     container: MarkdownHeading[] = this.headings,
     parentId?: string,
   ): MarkdownHeading {
     const item = {
-      id: parentId ? `${parentId}/${slugify(name)}` : `section/${slugify(name)}`,
+      id: parentId ? `${parentId}/${safeSlugify(name)}` : `section/${safeSlugify(name)}`,
       name,
+      level,
       items: [],
     };
     container.push(item);
@@ -77,54 +88,52 @@ export class MarkdownRenderer {
   }
 
   attachHeadingsDescriptions(rawText: string) {
-    const buildRegexp = heading =>
-      new RegExp(`<h\\d ${SECTION_ATTR}="${heading.id}" id="${heading.id}">`);
+    const buildRegexp = heading => {
+      return new RegExp(`##?\\s+${heading.name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}`);
+    };
 
     const flatHeadings = this.flattenHeadings(this.headings);
     if (flatHeadings.length < 1) {
       return;
     }
     let prevHeading = flatHeadings[0];
-
-    let prevPos = rawText.search(buildRegexp(prevHeading));
+    let prevRegexp = buildRegexp(prevHeading);
+    let prevPos = rawText.search(prevRegexp);
     for (let i = 1; i < flatHeadings.length; i++) {
       const heading = flatHeadings[i];
-      const currentPos = rawText.substr(prevPos + 1).search(buildRegexp(heading)) + prevPos + 1;
-      prevHeading.description = html2Str(rawText.substring(prevPos, currentPos));
+      const regexp = buildRegexp(heading);
+      const currentPos = rawText.substr(prevPos + 1).search(regexp) + prevPos + 1;
+      prevHeading.description = rawText
+        .substring(prevPos, currentPos)
+        .replace(prevRegexp, '')
+        .trim();
 
       prevHeading = heading;
+      prevRegexp = regexp;
       prevPos = currentPos;
     }
-    prevHeading.description = html2Str(rawText.substring(prevPos));
+    prevHeading.description = rawText
+      .substring(prevPos)
+      .replace(prevRegexp, '')
+      .trim();
   }
 
-  headingRule = (text: string, level: number, raw: string) => {
+  headingRule = (text: string, level: number, raw: string, slugger: marked.Slugger) => {
     if (level === 1) {
-      this.currentTopHeading = this.saveHeading(text);
-      const id = this.currentTopHeading.id;
-      return (
-        `<a name="${id}"></a>` +
-        `<h${level} ${SECTION_ATTR}="${id}" id="${id}">` +
-        `<a class="share-link" href="#${id}"></a>${text}</h${level}>`
-      );
+      this.currentTopHeading = this.saveHeading(text, level);
     } else if (level === 2) {
-      const { id } = this.saveHeading(
+      this.saveHeading(
         text,
+        level,
         this.currentTopHeading && this.currentTopHeading.items,
         this.currentTopHeading && this.currentTopHeading.id,
       );
-      return (
-        `<a name="${id}"></a>` +
-        `<h${level} ${SECTION_ATTR}="${id}" id="${id}">` +
-        `<a class="share-link" href="#${id}"></a>${text}</h${level}>`
-      );
-    } else {
-      return this.originalHeadingRule(text, level, raw);
     }
+    return this.originalHeadingRule(text, level, raw, slugger);
   };
 
-  renderMd(rawText: string, raw: boolean = true): string {
-    const opts = raw ? undefined : { renderer: this.headingEnhanceRenderer };
+  renderMd(rawText: string, extractHeadings: boolean = false): string {
+    const opts = extractHeadings ? { renderer: this.headingEnhanceRenderer } : undefined;
 
     const res = marked(rawText.toString(), opts);
 
@@ -132,106 +141,86 @@ export class MarkdownRenderer {
   }
 
   extractHeadings(rawText: string): MarkdownHeading[] {
-    const text = this.renderMd(rawText, false);
-    this.attachHeadingsDescriptions(text);
+    this.renderMd(rawText, true);
+    this.attachHeadingsDescriptions(rawText);
     const res = this.headings;
     this.headings = [];
     return res;
   }
 
-  // TODO: rewrite this completelly! Regexp-based 👎
-  // Use marked ecosystem
-  renderMdWithComponents(
-    rawText: string,
-    components: Dict<MDXComponentMeta>,
-    raw: boolean = true,
-  ): Array<string | MDXComponentMeta> {
-    const componentDefs: string[] = [];
-    const names = '(?:' + Object.keys(components).join('|') + ')';
-
-    const anyCompRegexp = new RegExp(
-      COMPONENT_REGEXP.replace(/{component}/g, '(<?' + names + '.*?)'),
-      'gmi',
-    );
-    let match = anyCompRegexp.exec(rawText);
-    while (match) {
-      componentDefs.push(match[1] || match[2]);
-      match = anyCompRegexp.exec(rawText);
+  // regexp-based 👎: remark is slow and too big so for now using marked + regexps soup
+  renderMdWithComponents(rawText: string): Array<string | MDXComponentMeta> {
+    const components = this.options && this.options.allowedMdComponents;
+    if (!components || Object.keys(components).length === 0) {
+      return [this.renderMd(rawText)];
     }
 
-    const splitCompRegexp = new RegExp(
-      COMPONENT_REGEXP.replace(/{component}/g, names + '.*?'),
-      'mi',
-    );
-    const htmlParts = rawText.split(splitCompRegexp);
+    const names = Object.keys(components).join('|');
+    const componentsRegexp = new RegExp(COMPONENT_REGEXP.replace(/{component}/g, names), 'mig');
+
+    const htmlParts: string[] = [];
+    const componentDefs: MDXComponentMeta[] = [];
+
+    let match = componentsRegexp.exec(rawText);
+    let lasxtIdx = 0;
+    while (match) {
+      htmlParts.push(rawText.substring(lasxtIdx, match.index));
+      lasxtIdx = componentsRegexp.lastIndex;
+      const compName = match[1] || match[2] || match[5];
+      const componentMeta = components[compName];
+
+      const props = match[3] || match[6];
+      const children = match[4];
+
+      if (componentMeta) {
+        componentDefs.push({
+          component: componentMeta.component,
+          propsSelector: componentMeta.propsSelector,
+          props: { ...parseProps(props), ...componentMeta.props, children },
+        });
+      }
+      match = componentsRegexp.exec(rawText);
+    }
+    htmlParts.push(rawText.substring(lasxtIdx));
+
     const res: any[] = [];
     for (let i = 0; i < htmlParts.length; i++) {
       const htmlPart = htmlParts[i];
       if (htmlPart) {
-        res.push(this.renderMd(htmlPart, raw));
+        res.push(this.renderMd(htmlPart));
       }
       if (componentDefs[i]) {
-        const { componentName, attrs } = parseComponent(componentDefs[i]);
-        if (!componentName) {
-          continue;
-        }
-        res.push({
-          ...components[componentName],
-          attrs,
-        });
+        res.push(componentDefs[i]);
       }
     }
     return res;
   }
 }
 
-function parseComponent(
-  htmlTag: string,
-): {
-  componentName?: string;
-  attrs: any;
-} {
-  if (htmlTag.startsWith('<')) {
-    return legacyParse(htmlTag);
+function parseProps(props: string): object {
+  if (!props) {
+    return {};
   }
 
-  const match = /([\w_-]+)(\s+[\w_-]+\s*={[^}]*?})*/.exec(htmlTag);
-  if (match === null || match.length <= 1) {
-    return { componentName: undefined, attrs: {} };
-  }
-  const componentName = match[1];
-  const attrs = {};
-  for (let i = 2; i < match.length; i++) {
-    if (!match[i]) {
-      continue;
+  const regex = /([\w-]+)\s*=\s*(?:{([^}]+?)}|"([^"]+?)")/gim;
+  const parsed = {};
+  let match;
+  // tslint:disable-next-line
+  while ((match = regex.exec(props)) !== null) {
+    if (match[3]) {
+      // string prop match (in double quotes)
+      parsed[match[1]] = match[3];
+    } else if (match[2]) {
+      // jsx prop match (in curly braces)
+      let val;
+      try {
+        val = JSON.parse(match[2]);
+      } catch (e) {
+        /* noop */
+      }
+      parsed[match[1]] = val;
     }
-    const [name, value] = match[i]
-      .trim()
-      .split('=')
-      .map(p => p.trim());
-
-    // tslint:disable-next-line
-    attrs[name] = value.startsWith('{') ? eval(value.substr(1, value.length - 2)) : eval(value);
   }
-  return {
-    componentName,
-    attrs,
-  };
-}
 
-function legacyParse(
-  htmlTag: string,
-): {
-  componentName?: string;
-  attrs: any;
-} {
-  const match = /<([\w_-]+).*?>/.exec(htmlTag);
-  if (match === null || match.length <= 1) {
-    return { componentName: undefined, attrs: {} };
-  }
-  const componentName = match[1];
-  return {
-    componentName,
-    attrs: {}, // TODO
-  };
+  return parsed;
 }

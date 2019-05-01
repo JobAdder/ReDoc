@@ -1,9 +1,9 @@
-import * as webpack from 'webpack';
-import * as HtmlWebpackPlugin from 'html-webpack-plugin';
-import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
 import * as CopyWebpackPlugin from 'copy-webpack-plugin';
-import { resolve } from 'path';
+import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import * as HtmlWebpackPlugin from 'html-webpack-plugin';
 import { compact } from 'lodash';
+import { resolve } from 'path';
+import * as webpack from 'webpack';
 
 const VERSION = JSON.stringify(require('../package.json').version);
 const REVISION = JSON.stringify(
@@ -22,6 +22,7 @@ const tsLoader = env => ({
   options: {
     compilerOptions: {
       module: env.bench ? 'esnext' : 'es2015',
+      declaration: false,
     },
   },
 });
@@ -29,9 +30,13 @@ const tsLoader = env => ({
 const babelLoader = mode => ({
   loader: 'babel-loader',
   options: {
+    generatorOpts: {
+      decoratorsBeforeExport: true,
+    },
     plugins: compact([
-      '@babel/plugin-syntax-typescript',
+      ['@babel/plugin-syntax-typescript', { isTSX: true }],
       ['@babel/plugin-syntax-decorators', { legacy: true }],
+      '@babel/plugin-syntax-dynamic-import',
       '@babel/plugin-syntax-jsx',
       mode !== 'production' ? 'react-hot-loader/babel' : undefined,
       [
@@ -51,7 +56,9 @@ export default (env: { playground?: boolean; bench?: boolean } = {}, { mode }) =
     root(
       env.playground
         ? 'playground/hmr-playground.tsx'
-        : env.bench ? '../benchmark/index.tsx' : 'index.tsx',
+        : env.bench
+        ? '../benchmark/index.tsx'
+        : 'index.tsx',
     ),
   ],
   output: {
@@ -70,6 +77,12 @@ export default (env: { playground?: boolean; bench?: boolean } = {}, { mode }) =
 
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias:
+      mode !== 'production'
+        ? {
+            'react-dom': '@hot-loader/react-dom',
+          }
+        : {},
   },
 
   node: {
@@ -90,7 +103,7 @@ export default (env: { playground?: boolean; bench?: boolean } = {}, { mode }) =
       {
         test: /\.tsx?$/,
         use: [tsLoader(env), babelLoader(mode)],
-        exclude: ['node_modules'],
+        exclude: [/node_modules/],
       },
       {
         test: /\.css$/,
@@ -98,12 +111,11 @@ export default (env: { playground?: boolean; bench?: boolean } = {}, { mode }) =
           loader: 'css-loader',
           options: {
             sourceMap: true,
-            minimize: true,
           },
         },
       },
       {
-        test: /node_modules\/(swagger2openapi|reftools)\/.*\.js$/,
+        test: /node_modules\/(swagger2openapi|reftools|oas-resolver|oas-kit-common|oas-schema-walker)\/.*\.js$/,
         use: {
           loader: 'ts-loader',
           options: {
@@ -111,6 +123,7 @@ export default (env: { playground?: boolean; bench?: boolean } = {}, { mode }) =
             instance: 'ts2js-transpiler-only',
             compilerOptions: {
               allowJs: true,
+              declaration: false,
             },
           },
         },
@@ -125,7 +138,11 @@ export default (env: { playground?: boolean; bench?: boolean } = {}, { mode }) =
     new webpack.NamedModulesPlugin(),
     new webpack.optimize.ModuleConcatenationPlugin(),
     new HtmlWebpackPlugin({
-      template: env.playground ? 'demo/playground/index.html' : 'demo/index.html',
+      template: env.playground
+        ? 'demo/playground/index.html'
+        : env.bench
+        ? 'benchmark/index.html'
+        : 'demo/index.html',
     }),
     new ForkTsCheckerWebpackPlugin(),
     ignore(/js-yaml\/dumper\.js$/),

@@ -1,21 +1,19 @@
-import * as React from 'react';
-
 import styled, { media } from '../../styled-components';
 
 export const RedocWrap = styled.div`
-  font-family: ${props => props.theme.baseFont.family};
-  font-size: ${props => props.theme.baseFont.size};
-  font-weight: ${props => props.theme.baseFont.weight};
-  line-height: ${props => props.theme.baseFont.lineHeight};
-  color: ${props => props.theme.colors.text};
+  ${({ theme }) => `
+  font-family: ${theme.typography.fontFamily};
+  font-size: ${theme.typography.fontSize};
+  font-weight: ${theme.typography.fontWeightRegular};
+  line-height: ${theme.typography.lineHeight};
+  color: ${theme.colors.text.primary};
   display: flex;
   position: relative;
   text-align: left;
 
-  -webkit-font-smoothing: ${props => props.theme.baseFont.smoothing};
-  font-smoothing: ${props => props.theme.baseFont.smoothing};
-  ${props =>
-    (props.theme.baseFont.optimizeSpeed && 'text-rendering: optimizeSpeed !important') || ''};
+  -webkit-font-smoothing: ${theme.typography.smoothing};
+  font-smoothing: ${theme.typography.smoothing};
+  ${(theme.typography.optimizeSpeed && 'text-rendering: optimizeSpeed !important') || ''};
 
   tap-highlight-color: rgba(0, 0, 0, 0);
   text-size-adjust: 100%;
@@ -24,10 +22,7 @@ export const RedocWrap = styled.div`
     box-sizing: border-box;
     -webkit-tap-highlight-color: rgba(255, 255, 255, 0);
   }
-
-  .redoc-markdown h1 {
-    padding-top: ${props => props.theme.spacingUnit * 4}px;
-  }
+`};
 `;
 
 export const ApiContentWrap = styled.div`
@@ -35,20 +30,28 @@ export const ApiContentWrap = styled.div`
   position: relative;
   overflow: hidden;
   width: calc(100% - ${props => props.theme.menu.width});
-  ${media.lessThan('small')`
+  ${media.lessThan('small', true)`
     width: 100%;
   `};
+
   contain: layout;
 `;
 
 export const BackgroundStub = styled.div`
-  background: ${props => props.theme.rightPanel.backgroundColor};
+  background: ${({ theme }) => theme.rightPanel.backgroundColor};
   position: absolute;
   top: 0;
   bottom: 0;
   right: 0;
-  width: calc((100% - ${props => props.theme.menu.width}) * 0.4);
-  ${media.lessThan('medium')`
+  width: ${({ theme }) => {
+    if (theme.rightPanel.width.endsWith('%')) {
+      const percents = parseInt(theme.rightPanel.width, 10);
+      return `calc((100% - ${theme.menu.width}) * ${percents / 100})`;
+    } else {
+      return theme.rightPanel.width;
+    }
+  }};
+  ${media.lessThan('medium', true)`
     display: none;
   `};
 `;

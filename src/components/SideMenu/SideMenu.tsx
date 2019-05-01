@@ -1,44 +1,33 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
-import { OptionsContext } from '../OptionsProvider';
 
 import { IMenuItem, MenuStore } from '../../services/MenuStore';
 import { MenuItems } from './MenuItems';
 
-import { PerfectScrollbar } from '../../common-elements/perfect-scrollbar';
+import { PerfectScrollbarWrap } from '../../common-elements/perfect-scrollbar';
 import { RedocAttribution } from './styled.elements';
 
 @observer
-export class SideMenu extends React.Component<{ menu: MenuStore }> {
+export class SideMenu extends React.Component<{ menu: MenuStore; className?: string }> {
   private _updateScroll?: () => void;
 
   render() {
     const store = this.props.menu;
     return (
-      <OptionsContext.Consumer>
-        {options =>
-          options.nativeScrollbars ? (
-            <MenuItems
-              style={{
-                overflow: 'auto',
-                msOverflowStyle: '-ms-autohiding-scrollbar',
-              }}
-              items={store.items}
-              onActivate={this.activate}
-              root={true}
-            />
-          ) : (
-            <PerfectScrollbar updateFn={this.saveScrollUpdate}>
-              <MenuItems items={store.items} onActivate={this.activate} root={true} />
-              <RedocAttribution>
-                <a target="_blank" href="https://github.com/Rebilly/ReDoc">
-                  Documentation Powered by ReDoc
-                </a>
-              </RedocAttribution>
-            </PerfectScrollbar>
-          )
-        }
-      </OptionsContext.Consumer>
+      <PerfectScrollbarWrap
+        updateFn={this.saveScrollUpdate}
+        className={this.props.className}
+        options={{
+          wheelPropagation: false,
+        }}
+      >
+        <MenuItems items={store.items} onActivate={this.activate} root={true} />
+        <RedocAttribution>
+          <a target="_blank" href="https://github.com/Rebilly/ReDoc">
+            Documentation Powered by ReDoc
+          </a>
+        </RedocAttribution>
+      </PerfectScrollbarWrap>
     );
   }
 

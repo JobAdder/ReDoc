@@ -3,6 +3,7 @@ import * as React from 'react';
 
 import { ShelfIcon } from '../../common-elements/shelfs';
 import { IMenuItem, OperationModel } from '../../services';
+import { shortenHTTPVerb } from '../../utils/openapi';
 import { MenuItems } from './MenuItems';
 import { MenuItemLabel, MenuItemLi, MenuItemTitle, OperationBadge } from './styled.elements';
 
@@ -21,14 +22,16 @@ export class MenuItem extends React.Component<MenuItemProps> {
     evt.stopPropagation();
   };
 
-  componentDidUpdate() {
-    if (this.props.item.active) {
-      this.scrollIntoView();
-    }
+  componentDidMount() {
+    this.scrollIntoViewIfActive();
   }
 
-  scrollIntoView() {
-    if (this.ref) {
+  componentDidUpdate() {
+    this.scrollIntoViewIfActive();
+  }
+
+  scrollIntoViewIfActive() {
+    if (this.props.item.active && this.ref) {
       this.ref.scrollIntoViewIfNeeded();
     }
   }
@@ -43,7 +46,7 @@ export class MenuItem extends React.Component<MenuItemProps> {
       <MenuItemLi
         onClick={this.activate}
         depth={item.depth}
-        innerRef={this.saveRef}
+        ref={this.saveRef}
         data-item-id={item.id}
       >
         {item.type === 'operation' ? (
@@ -56,7 +59,7 @@ export class MenuItem extends React.Component<MenuItemProps> {
             </MenuItemTitle>
             {(item.depth > 0 &&
               item.items.length > 0 && (
-                <ShelfIcon float={'right'} direction={item.active ? 'down' : 'right'} />
+                <ShelfIcon float={'right'} direction={item.expanded ? 'down' : 'right'} />
               )) ||
               null}
           </MenuItemLabel>
@@ -64,7 +67,11 @@ export class MenuItem extends React.Component<MenuItemProps> {
         {!withoutChildren &&
           item.items &&
           item.items.length > 0 && (
-            <MenuItems active={item.active} items={item.items} onActivate={this.props.onActivate} />
+            <MenuItems
+              expanded={item.expanded}
+              items={item.items}
+              onActivate={this.props.onActivate}
+            />
           )}
       </MenuItemLi>
     );
@@ -73,22 +80,16 @@ export class MenuItem extends React.Component<MenuItemProps> {
 
 export interface OperationMenuItemContentProps {
   item: OperationModel;
-  className?: string;
 }
 
 @observer
 class OperationMenuItemContent extends React.Component<OperationMenuItemContentProps> {
   render() {
-    const { item, className } = this.props;
+    const { item } = this.props;
     return (
-      <MenuItemLabel
-        className={className}
-        depth={item.depth}
-        active={item.active}
-        deprecated={item.deprecated}
-      >
-        <OperationBadge type={item.httpVerb} />
-        <MenuItemTitle width="calc(100% - 32px)">
+      <MenuItemLabel depth={item.depth} active={item.active} deprecated={item.deprecated}>
+        <OperationBadge type={item.httpVerb}>{shortenHTTPVerb(item.httpVerb)}</OperationBadge>
+        <MenuItemTitle width="calc(100% - 38px)">
           {item.name}
           {this.props.children}
         </MenuItemTitle>

@@ -2,7 +2,9 @@ import * as React from 'react';
 
 import PerfectScrollbarType, * as PerfectScrollbarNamespace from 'perfect-scrollbar';
 import psStyles from 'perfect-scrollbar/css/perfect-scrollbar.css';
-import styled, { injectGlobal } from '../styled-components';
+
+import { OptionsContext } from '../components/OptionsProvider';
+import styled, { createGlobalStyle } from '../styled-components';
 
 /*
  * perfect scrollbar umd bundle uses exports assignment while module uses default export
@@ -12,22 +14,28 @@ import styled, { injectGlobal } from '../styled-components';
 const PerfectScrollbarConstructor =
   PerfectScrollbarNamespace.default || ((PerfectScrollbarNamespace as any) as PerfectScrollbarType);
 
-injectGlobal`${psStyles && psStyles.toString()}`;
+const PSStyling = createGlobalStyle`${psStyles && psStyles.toString()}`;
 
 const StyledScrollWrapper = styled.div`
   position: relative;
 `;
 
-export class PerfectScrollbar extends React.Component<{
+export interface PerfectScrollbarProps {
   options?: PerfectScrollbarType.Options;
   className?: string;
-  updateFn: (fn) => void;
-}> {
+  updateFn?: (fn) => void;
+}
+
+export class PerfectScrollbar extends React.Component<PerfectScrollbarProps> {
   private _container: HTMLElement;
   private inst: PerfectScrollbarType;
 
   componentDidMount() {
+    const offset = (this._container.parentElement && this._container.parentElement.scrollTop) || 0;
     this.inst = new PerfectScrollbarConstructor(this._container, this.props.options || {});
+    if (this._container.scrollTo) {
+      this._container.scrollTo(0, offset);
+    }
   }
 
   componentDidUpdate() {
@@ -45,12 +53,40 @@ export class PerfectScrollbar extends React.Component<{
   render() {
     const { children, className, updateFn } = this.props;
 
-    updateFn(this.componentDidUpdate.bind(this));
+    if (updateFn) {
+      updateFn(this.componentDidUpdate.bind(this));
+    }
 
     return (
-      <StyledScrollWrapper className={`scrollbar-container ${className}`} innerRef={this.handleRef}>
-        {children}
-      </StyledScrollWrapper>
+      <>
+        <PSStyling />
+        <StyledScrollWrapper className={`scrollbar-container ${className}`} ref={this.handleRef}>
+          {children}
+        </StyledScrollWrapper>
+      </>
     );
   }
+}
+
+export function PerfectScrollbarWrap(
+  props: PerfectScrollbarProps & { children: JSX.Element[] | JSX.Element },
+) {
+  return (
+    <OptionsContext.Consumer>
+      {options =>
+        !options.nativeScrollbars ? (
+          <PerfectScrollbar {...props}>{props.children}</PerfectScrollbar>
+        ) : (
+          <div
+            style={{
+              overflow: 'auto',
+              msOverflowStyle: '-ms-autohiding-scrollbar',
+            }}
+          >
+            {props.children}
+          </div>
+        )
+      }
+    </OptionsContext.Consumer>
+  );
 }

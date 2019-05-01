@@ -16,14 +16,34 @@ import 'prismjs/components/prism-php.js';
 import 'prismjs/components/prism-python.js';
 import 'prismjs/components/prism-ruby.js';
 import 'prismjs/components/prism-scala.js';
+import 'prismjs/components/prism-sql.js';
 import 'prismjs/components/prism-swift.js';
 
-import { injectGlobal } from '../styled-components';
-
-import prismStyles from 'prismjs/themes/prism-dark.css'; // dark theme
-injectGlobal`${prismStyles}`;
-
 const DEFAULT_LANG = 'clike';
+
+Prism.languages.insertBefore(
+  'javascript',
+  'string',
+  {
+    'property string': {
+      pattern: /([{,]\s*)"(?:\\.|[^\\"\r\n])*"(?=\s*:)/i,
+      lookbehind: true,
+    },
+  } as any,
+  undefined as any,
+);
+
+Prism.languages.insertBefore(
+  'javascript',
+  'punctuation',
+  {
+    property: {
+      pattern: /([{,]\s*)[a-z]\w*(?=\s*:)/i,
+      lookbehind: true,
+    },
+  },
+  undefined as any,
+);
 
 /**
  * map language names to Prism.js names
@@ -47,7 +67,8 @@ export function mapLang(lang: string): string {
  * @param lang highlight language
  * @return highlighted souce code as **html string**
  */
-export function highlight(source: string, lang: string): string {
+export function highlight(source: string, lang: string = DEFAULT_LANG): string {
+  lang = lang.toLowerCase();
   let grammar = Prism.languages[lang];
   if (!grammar) {
     grammar = Prism.languages[mapLang(lang)];

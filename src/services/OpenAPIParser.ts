@@ -1,12 +1,11 @@
-import { observable } from 'mobx';
 import { resolve as urlResolve } from 'url';
 
 import { OpenAPIRef, OpenAPISchema, OpenAPISpec, Referenced } from '../types';
 
 import { appendToMdHeading, IS_BROWSER } from '../utils/';
 import { JsonPointer } from '../utils/JsonPointer';
-import { isNamedDefinition } from '../utils/openapi';
-import { buildComponentComment, COMPONENT_REGEXP } from './MarkdownRenderer';
+import { isNamedDefinition, SECURITY_DEFINITIONS_COMPONENT_NAME } from '../utils/openapi';
+import { buildComponentComment, MarkdownRenderer } from './MarkdownRenderer';
 import { RedocNormalizedOptions } from './RedocNormalizedOptions';
 
 export type MergedOpenAPISchema = OpenAPISchema & { parentRefs?: string[] };
@@ -39,8 +38,8 @@ class RefCounter {
  * Loads and keeps spec. Provides raw spec operations
  */
 export class OpenAPIParser {
-  @observable specUrl: string;
-  @observable.ref spec: OpenAPISpec;
+  specUrl?: string;
+  spec: OpenAPISpec;
 
   private _refCounter: RefCounter = new RefCounter();
 
@@ -57,8 +56,6 @@ export class OpenAPIParser {
     const href = IS_BROWSER ? window.location.href : '';
     if (typeof specUrl === 'string') {
       this.specUrl = urlResolve(href, specUrl);
-    } else {
-      this.specUrl = href;
     }
   }
 
@@ -77,12 +74,8 @@ export class OpenAPIParser {
     ) {
       // Automatically inject Authentication section with SecurityDefinitions component
       const description = spec.info.description || '';
-      const securityRegexp = new RegExp(
-        COMPONENT_REGEXP.replace('{component}', '<security-definitions>'),
-        'gmi',
-      );
-      if (!securityRegexp.test(description)) {
-        const comment = buildComponentComment('security-definitions');
+      if (!MarkdownRenderer.containsComponent(description, SECURITY_DEFINITIONS_COMPONENT_NAME)) {
+        const comment = buildComponentComment(SECURITY_DEFINITIONS_COMPONENT_NAME);
         spec.info.description = appendToMdHeading(description, 'Authentication', comment);
       }
     }
@@ -184,6 +177,8 @@ export class OpenAPIParser {
     $ref?: string,
     forceCircular: boolean = false,
   ): MergedOpenAPISchema {
+    schema = this.hoistOneOfs(schema);
+
     if (schema.allOf === undefined) {
       return schema;
     }
@@ -193,6 +188,14 @@ export class OpenAPIParser {
       allOf: undefined,
       parentRefs: [],
     };
+
+    // avoid mutating inner objects
+    if (receiver.properties !== undefined && typeof receiver.properties === 'object') {
+      receiver.properties = { ...receiver.properties };
+    }
+    if (receiver.items !== undefined && typeof receiver.items === 'object') {
+      receiver.items = { ...receiver.items };
+    }
 
     const allOfSchemas = schema.allOf.map(subSchema => {
       const resolved = this.deref(subSchema, forceCircular);
@@ -253,7 +256,9 @@ export class OpenAPIParser {
       if (subSchemaRef) {
         receiver.parentRefs!.push(subSchemaRef);
         if (receiver.title === undefined && isNamedDefinition(subSchemaRef)) {
-          receiver.title = JsonPointer.baseName(subSchemaRef);
+          // this is not so correct behaviour. comented out for now
+          // ref: https://github.com/Rebilly/ReDoc/issues/601
+          // receiver.title = JsonPointer.baseName(subSchemaRef);
         }
       }
     }
@@ -284,5 +289,40 @@ export class OpenAPIParser {
       }
     }
     return res;
+  }
+
+  exitParents(shema: MergedOpenAPISchema) {
+    for (const parent$ref of shema.parentRefs || []) {
+      this.exitRef({ $ref: parent$ref });
+    }
+  }
+
+  private hoistOneOfs(schema: OpenAPISchema) {
+    if (schema.allOf === undefined) {
+      return schema;
+    }
+
+    const allOf = schema.allOf;
+    for (let i = 0; i < allOf.length; i++) {
+      const sub = allOf[i];
+      if (Array.isArray(sub.oneOf)) {
+        const beforeAllOf = allOf.slice(0, i);
+        const afterAllOf = allOf.slice(i + 1);
+        return {
+          oneOf: sub.oneOf.map(part => {
+            const merged = this.mergeAllOf({
+              allOf: [...beforeAllOf, part, ...afterAllOf],
+            });
+
+            // each oneOf should be independent so exiting all the parent refs
+            // otherwise it will cause false-positive recursive detection
+            this.exitParents(merged);
+            return merged;
+          }),
+        };
+      }
+    }
+
+    return schema;
   }
 }

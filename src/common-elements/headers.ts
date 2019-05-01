@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import styled, { css, extensionsHook } from '../styled-components';
 
 const headerFontSize = {
@@ -9,14 +7,15 @@ const headerFontSize = {
 };
 
 export const headerCommonMixin = level => css`
-  font-family: ${props => props.theme.headingsFont.family};
-  font-weight: 400;
+  font-family: ${({ theme }) => theme.typography.headings.fontFamily};
+  font-weight: ${({ theme }) => theme.typography.headings.fontWeight};
   font-size: ${headerFontSize[level]};
+  line-height: ${({ theme }) => theme.typography.headings.lineHeight};
 `;
 
 export const H1 = styled.h1`
   ${headerCommonMixin(1)};
-  color: ${props => props.theme.colors.main};
+  color: ${({ theme }) => theme.colors.primary.main};
 
   ${extensionsHook('H1')};
 `;

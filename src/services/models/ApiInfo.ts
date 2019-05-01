@@ -1,44 +1,45 @@
 import { OpenAPIContact, OpenAPIInfo, OpenAPILicense } from '../../types';
 import { IS_BROWSER } from '../../utils/';
 import { OpenAPIParser } from '../OpenAPIParser';
-import { RedocNormalizedOptions } from '../RedocNormalizedOptions';
 
 export class ApiInfoModel implements OpenAPIInfo {
   title: string;
   version: string;
 
-  description?: string;
+  description: string;
   termsOfService?: string;
   contact?: OpenAPIContact;
   license?: OpenAPILicense;
 
-  constructor(private parser: OpenAPIParser, private options: RedocNormalizedOptions) {
-    Object.assign(this, parser.spec.info);
-  }
+  downloadLink?: string;
+  downloadFileName?: string;
 
-  get downloadLink() {
-    if (this.options.hideDownloadButton) {
-      return undefined;
+  constructor(private parser: OpenAPIParser) {
+    Object.assign(this, parser.spec.info);
+    this.description = parser.spec.info.description || '';
+    const firstHeadingLinePos = this.description.search(/^##?\s+/m);
+    if (firstHeadingLinePos > -1) {
+      this.description = this.description.substring(0, firstHeadingLinePos);
     }
 
+    this.downloadLink = this.getDownloadLink();
+    this.downloadFileName = this.getDownloadFileName();
+  }
+
+  private getDownloadLink(): string | undefined {
     if (this.parser.specUrl) {
       return this.parser.specUrl;
     }
 
-    if (IS_BROWSER && window.Blob && window.URL) {
+    if (IS_BROWSER && window.Blob && window.URL && window.URL.createObjectURL) {
       const blob = new Blob([JSON.stringify(this.parser.spec, null, 2)], {
         type: 'application/json',
       });
       return window.URL.createObjectURL(blob);
-    } else if (!IS_BROWSER) {
-      return (
-        'data:application/octet-stream;base64,' +
-        new Buffer(JSON.stringify(this.parser.spec, null, 2)).toString('base64')
-      );
     }
   }
 
-  get downloadFileName(): string | undefined {
+  private getDownloadFileName(): string | undefined {
     if (!this.parser.specUrl) {
       return 'swagger.json';
     }

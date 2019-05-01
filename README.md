@@ -3,9 +3,9 @@
 
   **OpenAPI/Swagger-generated API Reference Documentation**
 
-  [![Build Status](https://travis-ci.org/Rebilly/ReDoc.svg?branch=master)](https://travis-ci.org/Rebilly/ReDoc) [![Coverage Status](https://coveralls.io/repos/Rebilly/ReDoc/badge.svg?branch=master&service=github)](https://coveralls.io/github/Rebilly/ReDoc?branch=master) [![dependencies Status](https://david-dm.org/Rebilly/ReDoc/status.svg)](https://david-dm.org/Rebilly/ReDoc) [![devDependencies Status](https://david-dm.org/Rebilly/ReDoc/dev-status.svg)](https://david-dm.org/Rebilly/ReDoc#info=devDependencies) [![npm](http://img.shields.io/npm/v/redoc.svg)](https://www.npmjs.com/package/redoc) [![License](https://img.shields.io/npm/l/redoc.svg)](https://github.com/Rebilly/ReDoc/blob/master/LICENSE) 
+  [![Build Status](https://travis-ci.org/Rebilly/ReDoc.svg?branch=master)](https://travis-ci.org/Rebilly/ReDoc) [![Coverage Status](https://coveralls.io/repos/Rebilly/ReDoc/badge.svg?branch=master&service=github)](https://coveralls.io/github/Rebilly/ReDoc?branch=master) [![dependencies Status](https://david-dm.org/Rebilly/ReDoc/status.svg)](https://david-dm.org/Rebilly/ReDoc) [![devDependencies Status](https://david-dm.org/Rebilly/ReDoc/dev-status.svg)](https://david-dm.org/Rebilly/ReDoc#info=devDependencies) [![npm](http://img.shields.io/npm/v/redoc.svg)](https://www.npmjs.com/package/redoc) [![License](https://img.shields.io/npm/l/redoc.svg)](https://github.com/Rebilly/ReDoc/blob/master/LICENSE)
 
-  [![bundle size](http://img.badgesize.io/https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js?compression=gzip&max=300000)](https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js) [![npm](https://img.shields.io/npm/dm/redoc.svg)](https://www.npmjs.com/package/redoc) [![](https://data.jsdelivr.com/v1/package/npm/redoc/badge)](https://www.jsdelivr.com/package/npm/redoc) 
+  [![bundle size](http://img.badgesize.io/https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js?compression=gzip&max=300000)](https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.js) [![npm](https://img.shields.io/npm/dm/redoc.svg)](https://www.npmjs.com/package/redoc) [![](https://data.jsdelivr.com/v1/package/npm/redoc/badge)](https://www.jsdelivr.com/package/npm/redoc) [![Docker Build Status](https://img.shields.io/docker/build/redocly/redoc.svg)](https://hub.docker.com/r/redocly/redoc/)
 
 
 </div>
@@ -70,6 +70,7 @@ Additionally, all the 1.x releases are hosted on our GitHub Pages-based **CDN**:
 - [Shopify Draft Orders](https://help.shopify.com/api/draft-orders)
 - [Discourse](http://docs.discourse.org)
 - [APIs.guru](https://apis.guru/api-doc/)
+- [FastAPI](https://github.com/tiangolo/fastapi)
 
 ## Deployment
 
@@ -135,6 +136,10 @@ For npm:
 
 ## Usage as a React component
 
+Install peer dependencies required by ReDoc if you don't have them installed already:
+
+    npm i react react-dom mobx@^4.2.0 styled-components
+
 Import `RedocStandalone` component from 'redoc' module:
 
 ```js
@@ -157,10 +162,10 @@ Also you can pass options:
 
 ```js
 <RedocStandalone
-  specUrl="http://rebilly.github.io/RebillyAPI/swagger.json"
+  specUrl="http://rebilly.github.io/RebillyAPI/openapi.json"
   options={{
     nativeScrollbars: true,
-    theme: { colors: { main: '#dd5522' } },
+    theme: { colors: { primary { main: '#dd5522' } } },
   }}
 />
 ```
@@ -171,7 +176,7 @@ You can also specify `onLoaded` callback which will be called each time Redoc ha
 
 ```js
 <RedocStandalone
-  specUrl="http://rebilly.github.io/RebillyAPI/swagger.json"
+  specUrl="http://rebilly.github.io/RebillyAPI/openapi.json"
   onLoaded={error => {
     if (!error) {
       console.log('Yay!');
@@ -179,6 +184,17 @@ You can also specify `onLoaded` callback which will be called each time Redoc ha
   }}
 />
 ```
+
+## The Docker way
+
+ReDoc is available as pre-built Docker image in official [Docker Hub repository](https://hub.docker.com/r/redocly/redoc/). You may simply pull & run it:
+
+    docker pull redocly/redoc
+    docker run -p 8080:80 redocly/redoc
+
+Also you may rewrite some predefined environment variables defined in [Dockerfile](./config/docker/Dockerfile). By default ReDoc starts with demo Petstore spec located at `http://petstore.swagger.io/v2/swagger.json`, but you may change this URL using environment variable `SPEC_URL`:
+
+    docker run -p 8080:80 -e SPEC_URL=https://api.example.com/openapi.json redocly/redoc
 
 ## ReDoc CLI
 
@@ -190,7 +206,7 @@ You can also specify `onLoaded` callback which will be called each time Redoc ha
 You can inject Security Definitions widget into any place of your specification `description`. Check out details [here](docs/security-definitions-injection.md).
 
 ### Swagger vendor extensions
-ReDoc makes use of the following [vendor extensions](http://swagger.io/specification/#vendorExtensions):
+ReDoc makes use of the following [vendor extensions](https://swagger.io/specification/#specificationExtensions):
 * [`x-logo`](docs/redoc-vendor-extensions.md#x-logo) - is used to specify API logo
 * [`x-traitTag`](docs/redoc-vendor-extensions.md#x-traitTag) - useful for handling out common things like Pagination, Rate-Limits, etc
 * [`x-code-samples`](docs/redoc-vendor-extensions.md#x-code-samples) - specify operation code samples
@@ -215,11 +231,15 @@ You can use all of the following options with standalone version on <redoc> tag 
 * `hideHostname` - if set, the protocol and hostname is not shown in the operation definition.
 * `expandResponses` - specify which responses to expand by default by response codes. Values should be passed as comma-separated list without spaces e.g. `expandResponses="200,201"`. Special value `"all"` expands all responses by default. Be careful: this option can slow-down documentation rendering time.
 * `requiredPropsFirst` - show required properties first ordered in the same order as in `required` array.
+* `sortPropsAlphabetically` - sort properties alphabetically
+* `showExtensions` - show vendor extensions ("x-" fields). Extensions used by ReDoc are ignored. Can be boolean or an array of `string` with names of extensions to display
 * `noAutoAuth` - do not inject Authentication section automatically
 * `pathInMiddlePanel` - show path link and HTTP verb in the middle panel instead of the right one
 * `hideLoading` - do not show loading animation. Useful for small docs
 * `nativeScrollbars` - use native scrollbar for sidemenu instead of perfect-scroll (scrolling performance optimization for big specs)
 * `hideDownloadButton` - do not show "Download" spec button. **THIS DOESN'T MAKE YOUR SPEC PRIVATE**, it just hides the button.
+* `disableSearch` - disable search indexing and search box
+* `onlyRequiredInSamples` - shows only required fields in request samples.
 * `theme` - ReDoc theme. Not documented yet. For details check source code: [theme.ts](https://github.com/Rebilly/ReDoc/blob/master/src/theme.ts)
 
 ## Advanced usage of standalone version

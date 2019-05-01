@@ -59,6 +59,7 @@ export interface OpenAPIPath {
 
 export interface OpenAPIXCodeSample {
   lang: string;
+  label?: string;
   source: string;
 }
 
@@ -254,7 +255,7 @@ export interface OpenAPITag {
 
 export interface OpenAPIExternalDocumentation {
   description?: string;
-  url?: string;
+  url: string;
 }
 
 export interface OpenAPIContact {

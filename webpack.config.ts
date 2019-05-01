@@ -1,22 +1,34 @@
 /* tslint:disable:no-implicit-dependencies */
 import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
-import * as HtmlWebpackPlugin from 'html-webpack-plugin';
 import * as webpack from 'webpack';
 
 import * as path from 'path';
 
 const nodeExternals = require('webpack-node-externals')({
   // bundle in moudules that need transpiling + non-js (e.g. css)
-  whitelist: ['swagger2openapi', /reftools/, /\.(?!(?:jsx?|json)$).{1,5}$/i],
+  whitelist: [
+    'swagger2openapi',
+    /reftools/,
+    'oas-resolver',
+    'oas-kit-common',
+    'oas-schema-walker',
+    /\.(?!(?:jsx?|json)$).{1,5}$/i,
+  ],
 });
 
 const VERSION = JSON.stringify(require('./package.json').version);
-const REVISION = JSON.stringify(
-  require('child_process')
-    .execSync('git rev-parse --short HEAD')
-    .toString()
-    .trim(),
-);
+let REVISION;
+
+try {
+  REVISION = JSON.stringify(
+    require('child_process')
+      .execSync('git rev-parse --short HEAD')
+      .toString()
+      .trim(),
+  );
+} catch (e) {
+  console.error('Skipping REDOC_REVISION');
+}
 
 const BANNER = `ReDoc - OpenAPI/Swagger-generated API Reference Documentation
 -------------------------------------------------------------
@@ -82,8 +94,11 @@ export default (env: { standalone?: boolean } = {}, { mode }) => ({
           {
             loader: 'babel-loader',
             options: {
+              generatorOpts: {
+                decoratorsBeforeExport: true,
+              },
               plugins: [
-                '@babel/plugin-syntax-typescript',
+                ['@babel/plugin-syntax-typescript', { isTSX: true }],
                 ['@babel/plugin-syntax-decorators', { legacy: true }],
                 '@babel/plugin-syntax-jsx',
                 [
@@ -97,10 +112,10 @@ export default (env: { standalone?: boolean } = {}, { mode }) => ({
             },
           },
         ],
-        exclude: ['node_modules'],
+        exclude: [/node_modules/],
       },
       {
-        test: /node_modules\/(swagger2openapi|reftools)\/.*\.js$/,
+        test: /node_modules\/(swagger2openapi|reftools|oas-resolver|oas-kit-common|oas-schema-walker)\/.*\.js$/,
         use: {
           loader: 'ts-loader',
           options: {
@@ -108,6 +123,7 @@ export default (env: { standalone?: boolean } = {}, { mode }) => ({
             transpileOnly: true,
             compilerOptions: {
               allowJs: true,
+              declaration: false,
             },
           },
         },
@@ -118,7 +134,6 @@ export default (env: { standalone?: boolean } = {}, { mode }) => ({
           loader: 'css-loader',
           options: {
             sourceMap: false,
-            minimize: true,
           },
         },
       },

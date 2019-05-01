@@ -1,7 +1,7 @@
 import { action, observable } from 'mobx';
-import slugify from 'slugify';
 
 import { OpenAPIExternalDocumentation, OpenAPITag } from '../../types';
+import { safeSlugify } from '../../utils';
 import { MarkdownHeading } from '../MarkdownRenderer';
 import { ContentItemModel } from '../MenuBuilder';
 import { IMenuItem, MenuItemGroupType } from '../MenuStore';
@@ -21,9 +21,13 @@ export class GroupModel implements IMenuItem {
   parent?: GroupModel;
   externalDocs?: OpenAPIExternalDocumentation;
 
-  @observable active: boolean = false;
+  @observable
+  active: boolean = false;
+  @observable
+  expanded: boolean = false;
 
   depth: number;
+  level: number;
   //#endregion
 
   constructor(
@@ -32,16 +36,17 @@ export class GroupModel implements IMenuItem {
     parent?: GroupModel,
   ) {
     // markdown headings already have ids calculated as they are needed for heading anchors
-    this.id = (tagOrGroup as MarkdownHeading).id || type + '/' + slugify(tagOrGroup.name);
+    this.id = (tagOrGroup as MarkdownHeading).id || type + '/' + safeSlugify(tagOrGroup.name);
     this.type = type;
     this.name = tagOrGroup['x-displayName'] || tagOrGroup.name;
+    this.level = (tagOrGroup as MarkdownHeading).level || 1;
     this.description = tagOrGroup.description || '';
     this.parent = parent;
     this.externalDocs = (tagOrGroup as OpenAPITag).externalDocs;
 
     // groups are active (expanded) by default
     if (this.type === 'group') {
-      this.active = true;
+      this.expanded = true;
     }
   }
 
@@ -51,11 +56,24 @@ export class GroupModel implements IMenuItem {
   }
 
   @action
-  deactivate() {
-    // disallow deactivating groups
+  expand() {
+    if (this.parent) {
+      this.parent.expand();
+    }
+    this.expanded = true;
+  }
+
+  @action
+  collapse() {
+    // disallow collapsing groups
     if (this.type === 'group') {
       return;
     }
+    this.expanded = false;
+  }
+
+  @action
+  deactivate() {
     this.active = false;
   }
 }

@@ -2,9 +2,11 @@ import {
   detectType,
   getOperationSummary,
   getStatusCodeType,
+  humanizeConstraints,
   isOperationName,
   isPrimitiveType,
   mergeParams,
+  normalizeServers,
 } from '../';
 
 import { OpenAPIParser } from '../../services';
@@ -186,6 +188,17 @@ describe('Utils', () => {
       };
       expect(isPrimitiveType(schema)).toEqual(false);
     });
+
+    it('should work with externally provided type', () => {
+      const schema = {
+        properties: {
+          a: {
+            type: 'string',
+          },
+        },
+      };
+      expect(isPrimitiveType(schema, 'object')).toEqual(false);
+    });
   });
 
   describe('openapi mergeParams', () => {
@@ -220,6 +233,124 @@ describe('Utils', () => {
       expect(res[0]).toEqual(pathParams[1]);
       expect(res[1]).toEqual(operationParams[0]);
       expect(res[2]).toEqual(operationParams[1]);
+    });
+  });
+
+  describe('normalize servers', () => {
+    it('should make url absolute and strip spec name', () => {
+      const res = normalizeServers('http://base.com/spec.yaml', [
+        {
+          url: '/sandbox/test',
+        },
+      ]);
+      expect(res).toEqual([{ url: 'http://base.com/sandbox/test', description: '' }]);
+    });
+
+    it('should correcly resolve url with server relative path', () => {
+      const res = normalizeServers('http://base.com/subpath/spec.yaml', [
+        {
+          url: '/sandbox/test',
+        },
+      ]);
+      expect(res).toEqual([{ url: 'http://base.com/sandbox/test', description: '' }]);
+    });
+
+    it('should correcly resolve url with relative path', () => {
+      const res = normalizeServers('http://base.com/subpath/spec.yaml', [
+        {
+          url: 'sandbox/test',
+        },
+      ]);
+      expect(res).toEqual([{ url: 'http://base.com/subpath/sandbox/test', description: '' }]);
+    });
+
+    it('should prefer server host over spec`s one', () => {
+      const res = normalizeServers('http://base.com/spec.yaml', [
+        {
+          url: 'https://otherbase.com/sandbox/test',
+        },
+      ]);
+      expect(res).toEqual([{ url: 'https://otherbase.com/sandbox/test', description: '' }]);
+    });
+
+    it('should strip trailing slash', () => {
+      const res = normalizeServers('', [
+        {
+          url: 'https://otherbase.com/sandbox/test/',
+        },
+      ]);
+      expect(res).toEqual([{ url: 'https://otherbase.com/sandbox/test', description: '' }]);
+    });
+
+    it('should set correct protocol', () => {
+      const res = normalizeServers('https://base.com', [
+        {
+          url: '//base.com/sandbox/test',
+          description: 'test',
+        },
+      ]);
+      expect(res).toEqual([{ url: 'https://base.com/sandbox/test', description: 'test' }]);
+    });
+
+    it('should expand variables', () => {
+      const servers = normalizeServers('', [
+        {
+          url: '{protocol}{host}{basePath}',
+          variables: {
+            protocol: {
+              default: 'http://',
+            },
+            host: {
+              default: '127.0.0.1',
+            },
+            basePath: {
+              default: '/path/to/endpoint',
+            },
+          },
+        },
+        {
+          url: 'http://127.0.0.2:{port}',
+          variables: {},
+        },
+        {
+          url: 'http://127.0.0.3',
+        },
+      ]);
+
+      expect(servers[0].url).toEqual('http://127.0.0.1/path/to/endpoint');
+      expect(servers[1].url).toEqual('http://127.0.0.2:{port}');
+      expect(servers[2].url).toEqual('http://127.0.0.3');
+    });
+  });
+
+  describe('openapi humanizeConstraints', () => {
+    const itemConstraintSchema = (
+      min: number | undefined = undefined,
+      max: number | undefined = undefined,
+    ) => ({ type: 'array', minItems: min, maxItems: max });
+
+    it('should not have a humanized constraint without schema constraints', () => {
+      expect(humanizeConstraints(itemConstraintSchema())).toHaveLength(0);
+    });
+
+    it('should have a humanized constraint when minItems is set', () => {
+      expect(humanizeConstraints(itemConstraintSchema(2))).toContain('>= 2 items');
+    });
+
+    it('should have a humanized constraint when maxItems is set', () => {
+      expect(humanizeConstraints(itemConstraintSchema(undefined, 8))).toContain('<= 8 items');
+    });
+
+    it('should have a humanized constraint when minItems and maxItems are both set', () => {
+      expect(humanizeConstraints(itemConstraintSchema(2, 8))).toContain('[ 2 .. 8 ] items');
+    });
+
+    it('should have a humanized constraint when minItems and maxItems are the same', () => {
+      expect(humanizeConstraints(itemConstraintSchema(7, 7))).toContain('7 items');
+    });
+
+    it('should have a humazined constraint when justMinItems is set, and it is equal to 1', () => {
+      expect(humanizeConstraints(itemConstraintSchema(1))).toContain('non-empty');
     });
   });
 });

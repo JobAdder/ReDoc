@@ -1,3 +1,6 @@
+import slugify from 'slugify';
+import { format, parse } from 'url';
+
 /**
  * Maps over array passing `isLast` bool to iterator as the second arguemnt
  */
@@ -62,10 +65,6 @@ export function stripTrailingSlash(path: string): string {
   return path;
 }
 
-export function isAbsolutePath(path: string): boolean {
-  return /^(?:[a-z]+:)?/i.test(path);
-}
-
 export function isNumeric(n: any): n is number {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
@@ -116,3 +115,53 @@ const isObject = (item: any): boolean => {
 const isMergebleObject = (item): boolean => {
   return isObject(item) && !Array.isArray(item);
 };
+
+/**
+ * slugify() returns empty string when failed to slugify.
+ * so try to return minimun slugified-string with failed one which keeps original value
+ * the regex codes are referenced with https://gist.github.com/mathewbyrne/1280286
+ */
+export function safeSlugify(value: string): string {
+  return (
+    slugify(value) ||
+    value
+      .toString()
+      .toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with -
+      .replace(/&/g, '-and-') // Replace & with 'and'
+      .replace(/\--+/g, '-') // Replace multiple - with single -
+      .replace(/^-+/, '') // Trim - from start of text
+      .replace(/-+$/, '')
+  ); // Trim - from end of text
+}
+
+export function isAbsoluteUrl(url: string) {
+  return /(?:^[a-z][a-z0-9+.-]*:|\/\/)/i.test(url);
+}
+
+/**
+ * simple resolve URL which doesn't break on strings with url fragments
+ * e.g. resolveUrl('http://test.com:{port}', 'path') results in http://test.com:{port}/path
+ */
+export function resolveUrl(url: string, to: string) {
+  let res;
+  if (to.startsWith('//')) {
+    const { protocol: specProtocol } = parse(url);
+    res = `${specProtocol}${to}`;
+  } else if (isAbsoluteUrl(to)) {
+    res = to;
+  } else if (!to.startsWith('/')) {
+    res = stripTrailingSlash(url) + '/' + to;
+  } else {
+    const urlObj = parse(url);
+    res = format({
+      ...urlObj,
+      pathname: to,
+    });
+  }
+  return stripTrailingSlash(res);
+}
+
+export function getBasePath(serverUrl: string): string {
+  return new URL(serverUrl).pathname;
+}

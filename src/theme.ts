@@ -1,23 +1,68 @@
-import { adjustHue, desaturate, lighten, transparentize } from 'polished';
+import { darken, desaturate, lighten, readableColor, transparentize } from 'polished';
 
 const defaultTheme: ThemeInterface = {
-  spacingUnit: 20,
-
+  spacing: {
+    unit: 5,
+    sectionHorizontal: ({ spacing }) => spacing.unit * 8,
+    sectionVertical: ({ spacing }) => spacing.unit * 8,
+  },
   breakpoints: {
     small: '50rem',
     medium: '85rem',
     large: '105rem',
   },
   colors: {
-    main: '#32329f',
-    success: '#00aa13',
-    redirect: '#ffa500',
-    error: '#e53935',
-    info: '#87ceeb',
-    text: '#263238',
-    code: '#e53935',
-    codeBg: 'rgba(38, 50, 56, 0.04)',
-    warning: '#f1c400',
+    tonalOffset: 0.3,
+    primary: {
+      main: '#32329f',
+      light: ({ colors }) => lighten(colors.tonalOffset, colors.primary.main),
+      dark: ({ colors }) => darken(colors.tonalOffset, colors.primary.main),
+      contrastText: ({ colors }) => readableColor(colors.primary.main),
+    },
+    success: {
+      main: '#00aa13',
+      light: ({ colors }) => lighten(colors.tonalOffset, colors.success.main),
+      dark: ({ colors }) => darken(colors.tonalOffset, colors.success.main),
+      contrastText: ({ colors }) => readableColor(colors.success.main),
+    },
+    warning: {
+      main: '#d4ad03',
+      light: ({ colors }) => lighten(colors.tonalOffset, colors.warning.main),
+      dark: ({ colors }) => darken(colors.tonalOffset, colors.warning.main),
+      contrastText: '#ffffff',
+    },
+    error: {
+      main: '#e53935',
+      light: ({ colors }) => lighten(colors.tonalOffset, colors.error.main),
+      dark: ({ colors }) => darken(colors.tonalOffset, colors.error.main),
+      contrastText: ({ colors }) => readableColor(colors.error.main),
+    },
+    text: {
+      primary: '#333333',
+      secondary: ({ colors }) => lighten(colors.tonalOffset, colors.text.primary),
+    },
+    border: {
+      dark: 'rgba(0,0,0, 0.1)',
+      light: '#ffffff',
+    },
+    responses: {
+      success: {
+        color: ({ colors }) => colors.success.main,
+        backgroundColor: ({ colors }) => transparentize(0.9, colors.success.main),
+      },
+      error: {
+        color: ({ colors }) => colors.error.main,
+        backgroundColor: ({ colors }) => transparentize(0.9, colors.error.main),
+      },
+      redirect: {
+        color: '#ffa500',
+        backgroundColor: ({ colors }) => transparentize(0.9, colors.responses.redirect.color),
+      },
+      info: {
+        color: '#87ceeb',
+        backgroundColor: ({ colors }) => transparentize(0.9, colors.responses.info.color),
+      },
+    },
     http: {
       get: '#6bbd5b',
       post: '#248fb2',
@@ -30,52 +75,80 @@ const defaultTheme: ThemeInterface = {
       head: '#c167e4',
     },
   },
-  schemaView: {
-    linesColor: theme => lighten(0.25, desaturate(0.35, theme.colors.main)),
+  schema: {
+    linesColor: theme =>
+      lighten(
+        theme.colors.tonalOffset,
+        desaturate(theme.colors.tonalOffset, theme.colors.primary.main),
+      ),
     defaultDetailsWidth: '75%',
-    typeNameColor: theme => transparentize(0.2, theme.colors.text),
-    typeTitleColor: theme => theme.schemaView.typeNameColor,
-    requireLabelColor: theme => theme.colors.error,
+    typeNameColor: theme => theme.colors.text.secondary,
+    typeTitleColor: theme => theme.schema.typeNameColor,
+    requireLabelColor: theme => theme.colors.error.main,
+    labelsTextSize: '0.9em',
     nestingSpacing: '1em',
+    nestedBackground: '#fafafa',
+    arrow: {
+      size: '1.1em',
+      color: theme => theme.colors.text.secondary,
+    },
   },
-  baseFont: {
-    size: '14px',
-    lineHeight: '1.5',
-    weight: '400',
-    family: 'Roboto, sans-serif',
+  typography: {
+    fontSize: '14px',
+    lineHeight: '1.5em',
+    fontWeightRegular: '400',
+    fontWeightBold: '600',
+    fontWeightLight: '300',
+    fontFamily: 'Roboto, sans-serif',
     smoothing: 'antialiased',
     optimizeSpeed: true,
-  },
-  headingsFont: {
-    family: 'Montserrat, sans-serif',
-  },
-  code: {
-    fontSize: '13px',
-    fontFamily: 'Courier, monospace',
-  },
-  links: {
-    color: ({ colors }) => colors.main,
-    visited: ({ colors }) => colors.main,
-    hover: ({ colors }) => lighten(0.2, colors.main),
+    headings: {
+      fontFamily: 'Montserrat, sans-serif',
+      fontWeight: '400',
+      lineHeight: '1.6em',
+    },
+    code: {
+      fontSize: '13px',
+      fontFamily: 'Courier, monospace',
+      lineHeight: ({ typography }) => typography.lineHeight,
+      fontWeight: ({ typography }) => typography.fontWeightRegular,
+      color: '#e53935',
+      backgroundColor: 'rgba(38, 50, 56, 0.05)',
+      wrap: false,
+    },
+    links: {
+      color: ({ colors }) => colors.primary.main,
+      visited: ({ typography }) => typography.links.color,
+      hover: ({ typography }) => lighten(0.2, typography.links.color),
+    },
   },
   menu: {
     width: '260px',
     backgroundColor: '#fafafa',
+    textColor: '#333333',
     groupItems: {
       textTransform: 'uppercase',
     },
     level1Items: {
       textTransform: 'none',
     },
+    arrow: {
+      size: '1.5em',
+      color: theme => theme.menu.textColor,
+    },
   },
   logo: {
     maxHeight: ({ menu }) => menu.width,
     maxWidth: ({ menu }) => menu.width,
+    gutter: '2px',
   },
   rightPanel: {
     backgroundColor: '#263238',
     width: '40%',
     textColor: '#ffffff',
+  },
+  codeSample: {
+    backgroundColor: ({ rightPanel }) => darken(0.1, rightPanel.backgroundColor),
   },
 };
 
@@ -95,7 +168,7 @@ export function resolveTheme(theme: ThemeInterface): ResolvedThemeInterface {
               counter++;
               if (counter > 1000) {
                 throw new Error(
-                  `Theme probably contains cirucal dependency at ${currentPath}: ${val.toString()}`,
+                  `Theme probably contains circular dependency at ${currentPath}: ${val.toString()}`,
                 );
               }
 
@@ -115,23 +188,57 @@ export function resolveTheme(theme: ThemeInterface): ResolvedThemeInterface {
   return JSON.parse(JSON.stringify(theme));
 }
 
+export interface ColorSetting {
+  main: string;
+  light: string;
+  dark: string;
+  contrastText: string;
+}
+
+export interface HTTPResponseColos {
+  color: string;
+  backgroundColor: string;
+}
+
+export interface FontSettings {
+  fontSize: string;
+  fontWeight: string;
+  fontFamily: string;
+  lineHeight: string;
+  color: string;
+}
+
 export interface ResolvedThemeInterface {
-  spacingUnit: number;
+  spacing: {
+    unit: number;
+    sectionHorizontal: number;
+    sectionVertical: number;
+  };
   breakpoints: {
     small: string;
     medium: string;
     large: string;
   };
   colors: {
-    main: string;
-    success: string;
-    redirect: string;
-    error: string;
-    info: string;
-    text: string;
-    code: string;
-    codeBg: string;
-    warning: string;
+    tonalOffset: number;
+    primary: ColorSetting;
+    success: ColorSetting;
+    warning: ColorSetting;
+    error: ColorSetting;
+    border: {
+      light: string;
+      dark: string;
+    };
+    text: {
+      primary: string;
+      secondary: string;
+    };
+    responses: {
+      success: HTTPResponseColos;
+      error: HTTPResponseColos;
+      redirect: HTTPResponseColos;
+      info: HTTPResponseColos;
+    };
     http: {
       get: string;
       post: string;
@@ -144,52 +251,74 @@ export interface ResolvedThemeInterface {
       head: string;
     };
   };
-  schemaView: {
+  schema: {
     linesColor: string;
     defaultDetailsWidth: string;
     typeNameColor: string;
     typeTitleColor: string;
     requireLabelColor: string;
+    labelsTextSize: string;
     nestingSpacing: string;
+    nestedBackground: string;
+    arrow: {
+      size: string;
+      color: string;
+    };
   };
-  baseFont: {
-    size: string;
+  typography: {
+    fontSize: string;
     lineHeight: string;
-    weight: string;
-    family: string;
+    fontWeightLight: string;
+    fontWeightRegular: string;
+    fontWeightBold: string;
+    fontFamily: string;
+
     smoothing: string;
     optimizeSpeed: boolean;
-  };
-  headingsFont: {
-    family: string;
-  };
-  code: {
-    fontSize: string;
-    fontFamily: string;
-  };
-  links: {
-    color: string;
-    visited: string;
-    hover: string;
+
+    code: FontSettings & {
+      backgroundColor: string;
+      wrap: boolean;
+    };
+    headings: {
+      fontFamily: string;
+      fontWeight: string;
+      lineHeight: string;
+    };
+
+    links: {
+      color: string;
+      visited: string;
+      hover: string;
+    };
   };
   menu: {
     width: string;
     backgroundColor: string;
+    textColor: string;
     groupItems: {
       textTransform: string;
     };
     level1Items: {
       textTransform: string;
     };
+    arrow: {
+      size: string;
+      color: string;
+    };
   };
   logo: {
     maxHeight: string;
     maxWidth: string;
+    gutter: string;
   };
   rightPanel: {
     backgroundColor: string;
-    width: string;
     textColor: string;
+    width: string;
+  };
+  codeSample: {
+    backgroundColor: string;
   };
 
   extensionsHook?: (name: string, props: any) => string;

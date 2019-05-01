@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { darken } from 'polished';
 import styled from '../../styled-components';
 import { MenuItemLabel } from '../SideMenu/styled.elements';
 
@@ -7,23 +8,25 @@ export const SearchWrap = styled.div`
   padding: 5px 0;
 `;
 
-export const SearchInput = styled.input.attrs({
+export const SearchInput = styled.input.attrs(() => ({
   className: 'search-input',
-})`
-  width: calc(100% - ${props => props.theme.spacingUnit * 2}px);
+}))`
+  width: calc(100% - ${props => props.theme.spacing.unit * 8}px);
   box-sizing: border-box;
-  margin: 0 ${props => props.theme.spacingUnit}px;
-  padding: 5px ${props => props.theme.spacingUnit / 2}px 5px ${props => props.theme.spacingUnit}px;
+  margin: 0 ${props => props.theme.spacing.unit * 4}px;
+  padding: 5px ${props => props.theme.spacing.unit * 2}px 5px
+    ${props => props.theme.spacing.unit * 4}px;
   border: 0;
-  border-bottom: 1px solid #e1e1e1;
+  border-bottom: 1px solid ${({ theme }) => darken(0.1, theme.menu.backgroundColor)};
+  font-family: ${({ theme }) => theme.typography.fontFamily};
   font-weight: bold;
   font-size: 13px;
-  color: ${props => props.theme.colors.text};
+  color: ${props => props.theme.menu.textColor};
   background-color: transparent;
   outline: none;
 `;
 
-export const SearchIcon = styled((props: any) => (
+export const SearchIcon = styled((props: { className?: string }) => (
   <svg
     className={props.className}
     version="1.1"
@@ -38,17 +41,17 @@ export const SearchIcon = styled((props: any) => (
   className: 'search-icon',
 })`
   position: absolute;
-  left: ${props => props.theme.spacingUnit}px;
+  left: ${props => props.theme.spacing.unit * 4}px;
   height: 1.8em;
   width: 0.9em;
 
   path {
-    fill: ${props => props.theme.colors.text};
+    fill: ${props => props.theme.menu.textColor};
   }
 `;
 
 export const SearchResultsBox = styled.div`
-  padding: ${props => props.theme.spacingUnit / 4}px 0;
+  padding: ${props => props.theme.spacing.unit}px 0;
   background-color: #ededed;
   min-height: 150px;
   max-height: 250px;
@@ -57,7 +60,6 @@ export const SearchResultsBox = styled.div`
   margin-top: 10px;
   line-height: 1.4;
   font-size: 0.9em;
-  overflow: auto;
 
   ${MenuItemLabel} {
     padding-top: 6px;
@@ -80,9 +82,9 @@ export const SearchResultsBox = styled.div`
 export const ClearIcon = styled.i`
   position: absolute;
   display: inline-block;
-  width: ${props => props.theme.spacingUnit / 2}px;
+  width: ${props => props.theme.spacing.unit * 2}px;
   text-align: center;
-  right: ${props => props.theme.spacingUnit}px;
+  right: ${props => props.theme.spacing.unit * 4}px;
   line-height: 2em;
   vertical-align: middle;
   margin-right: 2px;

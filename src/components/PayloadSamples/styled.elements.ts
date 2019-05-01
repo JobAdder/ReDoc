@@ -1,7 +1,8 @@
-import * as React from 'react';
+// @ts-ignore
+import Dropdown from 'react-dropdown';
 import styled from '../../styled-components';
 
-import { DropdownProps, StyledDropdown } from '../../common-elements';
+import { StyledDropdown } from '../../common-elements';
 
 export const MimeLabel = styled.div`
   border-bottom: 1px solid rgba(255, 255, 255, 0.9);
@@ -10,11 +11,11 @@ export const MimeLabel = styled.div`
   color: rgba(255, 255, 255, 0.8);
 `;
 
-export const InvertedSimpleDropdown = StyledDropdown.extend`
+export const InvertedSimpleDropdown = styled(StyledDropdown)`
   margin-left: 10px;
   text-transform: none;
   font-size: 0.929em;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid ${({ theme }) => theme.rightPanel.textColor};
   margin: 0 0 10px 0;
   display: block;
 
@@ -24,11 +25,11 @@ export const InvertedSimpleDropdown = StyledDropdown.extend`
     border: none;
     padding: 0 1.2em 0 0;
     background: transparent;
-    color: rgba(255, 255, 255, 0.9);
+    color: ${({ theme }) => theme.rightPanel.textColor};
     box-shadow: none;
 
     .Dropdown-arrow {
-      border-top-color: rgba(255, 255, 255, 0.9);
+      border-top-color: ${({ theme }) => theme.rightPanel.textColor};
     }
   }
   .Dropdown-menu {
@@ -37,7 +38,7 @@ export const InvertedSimpleDropdown = StyledDropdown.extend`
 `;
 
 export const NoSampleLabel = styled.div`
-  font-family: ${props => props.theme.code.fontFamily};
+  font-family: ${props => props.theme.typography.code.fontFamily};
   font-size: 12px;
   color: #ee807f;
 `;

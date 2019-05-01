@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { H1, MiddlePanel } from '../../common-elements';
 import styled, { extensionsHook } from '../../styled-components';
 
@@ -7,7 +5,7 @@ const delimiterWidth = 15;
 
 export const ApiInfoWrap = MiddlePanel;
 
-export const ApiHeader = H1.extend`
+export const ApiHeader = styled(H1)`
   margin-top: 0;
   margin-bottom: 0.5em;
 
@@ -15,13 +13,14 @@ export const ApiHeader = H1.extend`
 `;
 
 export const DownloadButton = styled.a`
-  border: 1px solid ${props => props.theme.colors.main};
-  color: ${props => props.theme.colors.main};
+  border: 1px solid ${props => props.theme.colors.primary.main};
+  color: ${props => props.theme.colors.primary.main};
   font-weight: normal;
   margin-left: 0.5em;
   padding: 4px 8px 4px;
   display: inline-block;
   text-decoration: none;
+  cursor: pointer;
 
   ${extensionsHook('DownloadButton')};
 `;

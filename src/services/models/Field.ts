@@ -3,6 +3,7 @@ import { action, observable } from 'mobx';
 import { OpenAPIParameter, Referenced } from '../../types';
 import { RedocNormalizedOptions } from '../RedocNormalizedOptions';
 
+import { extractExtensions } from '../../utils/openapi';
 import { OpenAPIParser } from '../OpenAPIParser';
 import { SchemaModel } from './Schema';
 
@@ -10,7 +11,8 @@ import { SchemaModel } from './Schema';
  * Field or Parameter model ready to be used by components
  */
 export class FieldModel {
-  @observable expanded: boolean = false;
+  @observable
+  expanded: boolean = false;
 
   schema: SchemaModel;
   name: string;
@@ -20,6 +22,7 @@ export class FieldModel {
   deprecated: boolean;
   in?: string;
   kind: string;
+  extensions?: Dict<any>;
 
   constructor(
     parser: OpenAPIParser,
@@ -32,14 +35,17 @@ export class FieldModel {
     this.name = infoOrRef.name || info.name;
     this.in = info.in;
     this.required = !!info.required;
-    const schemaPointer = (parser.isRef(infoOrRef) ? infoOrRef.$ref : pointer) + '/schema';
-    this.schema = new SchemaModel(parser, info.schema || {}, schemaPointer, options);
+    this.schema = new SchemaModel(parser, info.schema || {}, pointer, options);
     this.description =
       info.description === undefined ? this.schema.description || '' : info.description;
     this.example = info.example || this.schema.example;
 
     this.deprecated = info.deprecated === undefined ? !!this.schema.deprecated : info.deprecated;
     parser.exitRef(infoOrRef);
+
+    if (options.showExtensions) {
+      this.extensions = extractExtensions(info, options.showExtensions);
+    }
   }
 
   @action

@@ -12,13 +12,14 @@ describe('Menu', () => {
   it('should sync active menu items while scroll', () => {
     cy.contains('h1', 'Introduction')
       .scrollIntoView()
-      .get('[role=menuitem].active:not(.-depth0)')
+      .get('[role=menuitem].active')
       .should('have.text', 'Introduction');
 
     cy.contains('h2', 'Add a new pet to the store')
       .scrollIntoView()
-      .get('[role=menuitem].active:not(.-depth0)')
-      .should('have.length', 2)
+      .wait(100)
+      .get('[role=menuitem].active')
+      .children()
       .last()
       .should('have.text', 'Add a new pet to the store')
       .should('be.visible');
@@ -28,7 +29,7 @@ describe('Menu', () => {
     cy.contains('[role=menuitem].-depth1', 'pet').click({ force: true });
     cy.location('hash').should('equal', '#tag/pet');
 
-    cy.contains('[role=menuitem]', 'Find pet by ID').click();
+    cy.contains('[role=menuitem]', 'Find pet by ID').click({ force: true });
     cy.location('hash').should('equal', '#operation/getPetById');
   });
 
@@ -38,7 +39,7 @@ describe('Menu', () => {
     petItem()
       .click({ force: true })
       .should('have.class', 'active');
-    cy.contains('[role=menuitem].-depth1', 'store').click();
+    cy.contains('[role=menuitem].-depth1', 'store').click({ force: true });
     petItem().should('not.have.class', 'active');
   });
 });

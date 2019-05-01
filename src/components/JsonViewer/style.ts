@@ -5,33 +5,12 @@ export const jsonStyles = css`
     display: none;
   }
 
-  font-family: ${props => props.theme.code.fontFamily};
-  font-size: ${props => props.theme.code.fontSize};
+  font-family: ${props => props.theme.typography.code.fontFamily};
+  font-size: ${props => props.theme.typography.code.fontSize};
 
-  word-break: break-all;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-
-  .type-null {
-    color: gray;
-  }
-
-  .type-boolean {
-    color: firebrick;
-  }
-
-  .type-number {
-    color: #4a8bb3;
-  }
-
-  .type-string {
-    color: #66b16e;
-    & + a,
-    & + a:visited {
-      color: #66b16e;
-      text-decoration: underline;
-    }
-  }
+  white-space: ${({ theme }) => (theme.typography.code.wrap ? 'pre-wrap' : 'pre')};
+  contain: content;
+  overflow-x: auto;
 
   .callback-function {
     color: gray;

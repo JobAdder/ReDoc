@@ -1,82 +1,107 @@
 import { transparentize } from 'polished';
-import * as React from 'react';
 
-import styled from '../styled-components';
+import styled, { extensionsHook } from '../styled-components';
 import { PropertyNameCell } from './fields-layout';
+import { ShelfIcon } from './shelfs';
 
-export const ClickablePropertyNameCell = PropertyNameCell.extend`
+export const ClickablePropertyNameCell = styled(PropertyNameCell)`
   cursor: pointer;
+
+  ${ShelfIcon} {
+    height: ${({ theme }) => theme.schema.arrow.size};
+    width: ${({ theme }) => theme.schema.arrow.size};
+    polygon {
+      fill: ${({ theme }) => theme.schema.arrow.color};
+    }
+  }
 `;
 
 export const FieldLabel = styled.span`
   vertical-align: middle;
-  font-size: 0.929em;
+  font-size: ${({ theme }) => theme.typography.code.fontSize};
   line-height: 20px;
 `;
 
-export const TypePrefix = FieldLabel.extend`
-  color: ${props => transparentize(0.2, props.theme.schemaView.typeNameColor)};
+export const TypePrefix = styled(FieldLabel)`
+  color: ${props => transparentize(0.2, props.theme.schema.typeNameColor)};
 `;
 
-export const TypeName = FieldLabel.extend`
-  color: ${props => props.theme.schemaView.typeNameColor};
+export const TypeName = styled(FieldLabel)`
+  color: ${props => props.theme.schema.typeNameColor};
 `;
 
-export const TypeTitle = FieldLabel.extend`
-  color: ${props => props.theme.schemaView.typeTitleColor};
+export const TypeTitle = styled(FieldLabel)`
+  color: ${props => props.theme.schema.typeTitleColor};
 `;
 
 export const TypeFormat = TypeName;
 
-export const RequiredLabel = FieldLabel.withComponent('div').extend`
-  color: ${props => props.theme.schemaView.requireLabelColor};
-  font-size: 11px;
+export const RequiredLabel = styled(FieldLabel.withComponent('div'))`
+  color: ${props => props.theme.schema.requireLabelColor};
+  font-size: ${props => props.theme.schema.labelsTextSize};
   font-weight: normal;
   margin-left: 20px;
   line-height: 1;
-  font-weight: normal;
 `;
 
-export const RecursiveLabel = FieldLabel.extend`
-  color: #dd9900;
+export const RecursiveLabel = styled(FieldLabel)`
+  color: ${({ theme }) => theme.colors.warning.main};
   font-size: 13px;
 `;
 
-export const NullableLabel = FieldLabel.extend`
+export const NullableLabel = styled(FieldLabel)`
   color: #3195a6;
   font-size: 13px;
 `;
 
-export const PatternLabel = FieldLabel.extend`
+export const PatternLabel = styled(FieldLabel)`
   color: #3195a6;
   &::before,
   &::after {
-    content: '/';
     font-weight: bold;
+  }
+
+  &::before {
+    content: ' /';
+  }
+
+  &::after {
+    content: '/ ';
   }
 `;
 
-export const ExampleValue = styled.span`
-  font-family: ${props => props.theme.code.fontFamily};
-  background-color: ${props => transparentize(0.98, props.theme.colors.text)};
-  border: 1px solid ${props => transparentize(0.85, props.theme.colors.text)};
-  margin: 0 3px;
-  padding: 0.4em 0.2em 0.2em;
-  font-size: 0.8em;
+export const ExampleValue = styled(FieldLabel)`
   border-radius: 2px;
-  color: ${props => transparentize(0.1, props.theme.colors.text)};
-  display: inline-block;
-  min-width: 20px;
-  text-align: center;
-  line-height: 1;
-  vertical-align: middle;
+  ${({ theme }) => `
+    background-color: ${transparentize(0.95, theme.colors.text.primary)};
+    color: ${transparentize(0.1, theme.colors.text.primary)};
+
+    margin: ${theme.spacing.unit}px;
+    padding: 0 ${theme.spacing.unit}px;
+    border: 1px solid ${transparentize(0.9, theme.colors.text.primary)};
+    font-family: ${theme.typography.code.fontFamily};
+    color: ${theme.typography.code.color};
+}`};
+  & + & {
+    margin-left: 0;
+  }
+  ${extensionsHook('ExampleValue')};
 `;
 
-export const ConstraintItem = FieldLabel.extend`
-  background-color: ${props => transparentize(0.85, props.theme.colors.main)};
-  color: ${props => transparentize(0.4, props.theme.colors.main)};
-  margin-right: 6px;
-  margin-left: 6px;
+export const ExtensionValue = styled(ExampleValue)``;
+
+export const ConstraintItem = styled(FieldLabel)`
   border-radius: 2px;
-  padding: 0 4px;
+  ${({ theme }) => `
+    background-color: ${transparentize(0.95, theme.colors.primary.light)};
+    color: ${transparentize(0.1, theme.colors.primary.main)};
+
+    margin: 0 ${theme.spacing.unit}px;
+    padding: 0 ${theme.spacing.unit}px;
+    border: 1px solid ${transparentize(0.9, theme.colors.primary.main)};
+}`};
+  & + & {
+    margin-left: 0;
+  }
+  ${extensionsHook('ConstraintItem')};
 `;

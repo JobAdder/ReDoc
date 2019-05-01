@@ -1,11 +1,11 @@
-import { action, computed, observable } from 'mobx';
+import { action, observable } from 'mobx';
 import { querySelector } from '../utils/dom';
-import { GroupModel, OperationModel, SpecStore } from './models';
+import { SpecStore } from './models';
 
-import { HistoryService } from './HistoryService';
+import { history as historyInst, HistoryService } from './HistoryService';
 import { ScrollService } from './ScrollService';
 
-import { flattenByProp, normalizeHash } from '../utils';
+import { flattenByProp, SECURITY_SCHEMES_SECTION_PREFIX } from '../utils';
 import { GROUP_DEPTH } from './MenuBuilder';
 
 export type MenuItemGroupType = 'group' | 'tag' | 'section';
@@ -19,6 +19,7 @@ export interface IMenuItem {
   description?: string;
   depth: number;
   active: boolean;
+  expanded: boolean;
   items: IMenuItem[];
   parent?: IMenuItem;
   deprecated?: boolean;
@@ -26,6 +27,9 @@ export interface IMenuItem {
 
   deactivate(): void;
   activate(): void;
+
+  collapse(): void;
+  expand(): void;
 }
 
 export const SECTION_ATTR = 'data-section-id';
@@ -38,38 +42,51 @@ export class MenuStore {
    * Statically try update scroll position
    * Used before hydrating from server-side rendered html to scroll page faster
    */
-  static updateOnHash(hash: string = HistoryService.hash, scroll: ScrollService) {
-    if (!hash) {
+  static updateOnHistory(id: string = historyInst.currentId, scroll: ScrollService) {
+    if (!id) {
       return;
     }
-    scroll.scrollIntoViewBySelector(`[${SECTION_ATTR}="${normalizeHash(hash)}"]`);
+    scroll.scrollIntoViewBySelector(`[${SECTION_ATTR}="${id}"]`);
   }
 
   /**
    * active item absolute index (when flattened). -1 means nothing is selected
    */
-  @observable activeItemIdx: number = -1;
+  @observable
+  activeItemIdx: number = -1;
 
   /**
    * whether sidebar with menu is opened or not
    */
-  @observable sideBarOpened: boolean = false;
+  @observable
+  sideBarOpened: boolean = false;
+
+  items: IMenuItem[];
+  flatItems: IMenuItem[];
 
   /**
    * cached flattened menu items to support absolute indexing
    */
   private _unsubscribe: () => void;
   private _hashUnsubscribe: () => void;
-  private _items?: Array<GroupModel | OperationModel>;
 
   /**
    *
    * @param spec [SpecStore](#SpecStore) which contains page content structure
-   * @param _scrollService scroll service instance used by this menu
+   * @param scroll scroll service instance used by this menu
    */
-  constructor(private spec: SpecStore, private _scrollService: ScrollService) {
-    this._unsubscribe = _scrollService.subscribe(this.updateOnScroll);
-    this._hashUnsubscribe = HistoryService.subscribe(this.updateOnHash);
+  constructor(spec: SpecStore, public scroll: ScrollService, public history: HistoryService) {
+    this.items = spec.contentItems;
+
+    this.flatItems = flattenByProp(this.items || [], 'items');
+    this.flatItems.forEach((item, idx) => (item.absoluteIdx = idx));
+
+    this.subscribe();
+  }
+
+  subscribe() {
+    this._unsubscribe = this.scroll.subscribe(this.updateOnScroll);
+    this._hashUnsubscribe = this.history.subscribe(this.updateOnHistory);
   }
 
   @action
@@ -83,22 +100,10 @@ export class MenuStore {
   }
 
   /**
-   * top level menu items (not flattened)
-   */
-  @computed
-  get items(): IMenuItem[] {
-    if (!this._items) {
-      this._items = this.spec.operationGroups;
-    }
-    return this._items;
-  }
-
-  /**
    * update active items on scroll
    * @param isScrolledDown whether last scroll was downside
    */
-  @action.bound
-  updateOnScroll(isScrolledDown: boolean): void {
+  updateOnScroll = (isScrolledDown: boolean): void => {
     const step = isScrolledDown ? 1 : -1;
     let itemIdx = this.activeItemIdx;
     while (true) {
@@ -112,12 +117,12 @@ export class MenuStore {
 
       if (isScrolledDown) {
         const el = this.getElementAt(itemIdx + 1);
-        if (this._scrollService.isElementBellow(el)) {
+        if (this.scroll.isElementBellow(el)) {
           break;
         }
       } else {
         const el = this.getElementAt(itemIdx);
-        if (this._scrollService.isElementAbove(el)) {
+        if (this.scroll.isElementAbove(el)) {
           break;
         }
       }
@@ -125,28 +130,29 @@ export class MenuStore {
     }
 
     this.activate(this.flatItems[itemIdx], true, true);
-  }
+  };
 
   /**
    * update active items on hash change
-   * @param hash current hash
+   * @param id current hash
    */
-  @action.bound
-  updateOnHash(hash: string = HistoryService.hash): boolean {
-    if (!hash) {
-      return false;
+  updateOnHistory = (id: string = this.history.currentId) => {
+    if (!id) {
+      return;
     }
     let item: IMenuItem | undefined;
-    hash = normalizeHash(hash);
 
-    item = this.flatItems.find(i => i.id === hash);
+    item = this.flatItems.find(i => i.id === id);
     if (item) {
       this.activateAndScroll(item, false);
     } else {
-      this._scrollService.scrollIntoViewBySelector(`[${SECTION_ATTR}="${hash}"]`);
+      if (id.startsWith(SECURITY_SCHEMES_SECTION_PREFIX)) {
+        item = this.flatItems.find(i => SECURITY_SCHEMES_SECTION_PREFIX.startsWith(i.id));
+        this.activate(item);
+      }
+      this.scroll.scrollIntoViewBySelector(`[${SECTION_ATTR}="${id}"]`);
     }
-    return item !== undefined;
-  }
+  };
 
   /**
    * get section/operation DOM Node related to the item or null if it doesn't exist
@@ -169,25 +175,15 @@ export class MenuStore {
   };
 
   /**
-   * flattened items as they appear in the tree depth-first (top to bottom in the view)
-   */
-  @computed
-  get flatItems(): IMenuItem[] {
-    const flatItems = flattenByProp(this._items || [], 'items');
-    flatItems.forEach((item, idx) => (item.absoluteIdx = idx));
-    return flatItems;
-  }
-
-  /**
    * activate menu item
    * @param item item to activate
-   * @param updateHash [true] whether to update location hash
+   * @param updateLocation [true] whether to update location
    * @param rewriteHistory [false] whether to rewrite browser history (do not create new enrty)
    */
   @action
   activate(
     item: IMenuItem | undefined,
-    updateHash: boolean = true,
+    updateLocation: boolean = true,
     rewriteHistory: boolean = false,
   ) {
     if ((this.activeItem && this.activeItem.id) === (item && item.id)) {
@@ -195,7 +191,7 @@ export class MenuStore {
     }
     this.deactivate(this.activeItem);
     if (!item) {
-      HistoryService.update('', rewriteHistory);
+      this.history.replace('', rewriteHistory);
       return;
     }
 
@@ -206,14 +202,12 @@ export class MenuStore {
     }
 
     this.activeItemIdx = item.absoluteIdx!;
-    if (updateHash) {
-      HistoryService.update(item.id, rewriteHistory);
+    if (updateLocation) {
+      this.history.replace(item.id, rewriteHistory);
     }
 
-    while (item !== undefined) {
-      item.activate();
-      item = item.parent;
-    }
+    item.activate();
+    item.expand();
   }
 
   /**
@@ -221,8 +215,12 @@ export class MenuStore {
    * @param item item to deactivate
    */
   deactivate(item: IMenuItem | undefined) {
+    if (item === undefined) {
+      return;
+    }
+    item.deactivate();
     while (item !== undefined) {
-      item.deactivate();
+      item.collapse();
       item = item.parent;
     }
   }
@@ -232,10 +230,14 @@ export class MenuStore {
    * @see MenuStore.activate
    */
   @action.bound
-  activateAndScroll(item: IMenuItem | undefined, updateHash?: boolean, rewriteHistory?: boolean) {
+  activateAndScroll(
+    item: IMenuItem | undefined,
+    updateLocation?: boolean,
+    rewriteHistory?: boolean,
+  ) {
     // item here can be a copy from search results so find corresponding item from menu
     const menuItem = (item && this.getItemById(item.id)) || item;
-    this.activate(menuItem, updateHash, rewriteHistory);
+    this.activate(menuItem, updateLocation, rewriteHistory);
     this.scrollToActive();
     if (!menuItem || !menuItem.items.length) {
       this.closeSidebar();
@@ -246,7 +248,7 @@ export class MenuStore {
    * scrolls to active section
    */
   scrollToActive(): void {
-    this._scrollService.scrollIntoView(this.getElementAt(this.activeItemIdx));
+    this.scroll.scrollIntoView(this.getElementAt(this.activeItemIdx));
   }
 
   dispose() {

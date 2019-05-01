@@ -1,12 +1,17 @@
+import { dirname } from 'path';
+
 import { OpenAPIParser } from '../services/OpenAPIParser';
 import {
+  OpenAPIEncoding,
   OpenAPIMediaType,
   OpenAPIOperation,
   OpenAPIParameter,
   OpenAPISchema,
+  OpenAPIServer,
   Referenced,
 } from '../types';
-import { isNumeric } from './helpers';
+import { IS_BROWSER } from './dom';
+import { isNumeric, resolveUrl } from './helpers';
 
 function isWildcardStatusCode(statusCode: string | number): statusCode is string {
   return typeof statusCode === 'string' && /\dxx/i.test(statusCode);
@@ -16,12 +21,12 @@ export function isStatusCode(statusCode: string) {
   return statusCode === 'default' || isNumeric(statusCode) || isWildcardStatusCode(statusCode);
 }
 
-export function getStatusCodeType(statusCode: string, defaultAsError = false): string {
+export function getStatusCodeType(statusCode: string | number, defaultAsError = false): string {
   if (statusCode === 'default') {
     return defaultAsError ? 'error' : 'success';
   }
 
-  let code = parseInt(statusCode, 10);
+  let code = typeof statusCode === 'string' ? parseInt(statusCode, 10) : statusCode;
   if (isWildcardStatusCode(statusCode)) {
     code *= 100; // parseInt('2xx') parses to 2
   }
@@ -101,18 +106,18 @@ export function detectType(schema: OpenAPISchema): string {
   return 'any';
 }
 
-export function isPrimitiveType(schema: OpenAPISchema) {
+export function isPrimitiveType(schema: OpenAPISchema, type: string | undefined = schema.type) {
   if (schema.oneOf !== undefined || schema.anyOf !== undefined) {
     return false;
   }
 
-  if (schema.type === 'object') {
+  if (type === 'object') {
     return schema.properties !== undefined
       ? Object.keys(schema.properties).length === 0
       : schema.additionalProperties === undefined;
   }
 
-  if (schema.type === 'array') {
+  if (type === 'array') {
     if (schema.items === undefined) {
       return true;
     }
@@ -126,6 +131,101 @@ export function isJsonLike(contentType: string): boolean {
   return contentType.search(/json/i) !== -1;
 }
 
+export function isFormUrlEncoded(contentType: string): boolean {
+  return contentType === 'application/x-www-form-urlencoded';
+}
+
+function formEncodeField(fieldVal: any, fieldName: string, explode: boolean): string {
+  if (!fieldVal || !fieldVal.length) {
+    return fieldName + '=';
+  }
+
+  if (Array.isArray(fieldVal)) {
+    if (explode) {
+      return fieldVal.map(val => `${fieldName}=${val}`).join('&');
+    } else {
+      return fieldName + '=' + fieldVal.map(val => val.toString()).join(',');
+    }
+  } else if (typeof fieldVal === 'object') {
+    if (explode) {
+      return Object.keys(fieldVal)
+        .map(k => `${k}=${fieldVal[k]}`)
+        .join('&');
+    } else {
+      return (
+        fieldName +
+        '=' +
+        Object.keys(fieldVal)
+          .map(k => `${k},${fieldVal[k]}`)
+          .join(',')
+      );
+    }
+  } else {
+    return fieldName + '=' + fieldVal.toString();
+  }
+}
+
+function delimitedEncodeField(fieldVal: any, fieldName: string, delimeter: string): string {
+  if (Array.isArray(fieldVal)) {
+    return fieldVal.map(v => v.toString()).join(delimeter);
+  } else if (typeof fieldVal === 'object') {
+    return Object.keys(fieldVal)
+      .map(k => `${k}${delimeter}${fieldVal[k]}`)
+      .join(delimeter);
+  } else {
+    return fieldName + '=' + fieldVal.toString();
+  }
+}
+
+function deepObjectEncodeField(fieldVal: any, fieldName: string): string {
+  if (Array.isArray(fieldVal)) {
+    console.warn('deepObject style cannot be used with array value:' + fieldVal.toString());
+    return '';
+  } else if (typeof fieldVal === 'object') {
+    return Object.keys(fieldVal)
+      .map(k => `${fieldName}[${k}]=${fieldVal[k]}`)
+      .join('&');
+  } else {
+    console.warn('deepObject style cannot be used with non-object value:' + fieldVal.toString());
+    return '';
+  }
+}
+
+/*
+ * Should be used only for url-form-encoded body payloads
+ * To be used for parmaters should be extended with other style values
+ */
+export function urlFormEncodePayload(
+  payload: object,
+  encoding: { [field: string]: OpenAPIEncoding } = {},
+) {
+  if (Array.isArray(payload)) {
+    throw new Error('Payload must have fields: ' + payload.toString());
+  } else {
+    return Object.keys(payload)
+      .map(fieldName => {
+        const fieldVal = payload[fieldName];
+        const { style = 'form', explode = true } = encoding[fieldName] || {};
+        switch (style) {
+          case 'form':
+            return formEncodeField(fieldVal, fieldName, explode);
+            break;
+          case 'spaceDelimited':
+            return delimitedEncodeField(fieldVal, fieldName, '%20');
+          case 'pipeDelimited':
+            return delimitedEncodeField(fieldVal, fieldName, '|');
+          case 'deepObject':
+            return deepObjectEncodeField(fieldVal, fieldName);
+          default:
+            // TODO implement rest of styles for path parameters
+            console.warn('Incorrect or unsupported encoding style: ' + style);
+            return '';
+        }
+      })
+      .join('&');
+  }
+}
+
 export function langFromMime(contentType: string): string {
   if (contentType.search(/xml/i) !== -1) {
     return 'xml';
@@ -137,27 +237,42 @@ export function isNamedDefinition(pointer?: string): boolean {
   return /^#\/components\/schemas\/[^\/]+$/.test(pointer || '');
 }
 
+function humanizeRangeConstraint(
+  description: string,
+  min: number | undefined,
+  max: number | undefined,
+): string | undefined {
+  let stringRange;
+  if (min !== undefined && max !== undefined) {
+    if (min === max) {
+      stringRange = `${min} ${description}`;
+    } else {
+      stringRange = `[ ${min} .. ${max} ] ${description}`;
+    }
+  } else if (max !== undefined) {
+    stringRange = `<= ${max} ${description}`;
+  } else if (min !== undefined) {
+    if (min === 1) {
+      stringRange = 'non-empty';
+    } else {
+      stringRange = `>= ${min} ${description}`;
+    }
+  }
+
+  return stringRange;
+}
+
 export function humanizeConstraints(schema: OpenAPISchema): string[] {
   const res: string[] = [];
 
-  let stringRange;
-  if (schema.minLength !== undefined && schema.maxLength !== undefined) {
-    if (schema.minLength === schema.maxLength) {
-      stringRange = `${schema.minLength} characters`;
-    } else {
-      stringRange = `[ ${schema.minLength} .. ${schema.maxLength} ] characters`;
-    }
-  } else if (schema.maxLength !== undefined) {
-    stringRange = `<= ${schema.maxLength} characters`;
-  } else if (schema.minLength !== undefined) {
-    if (schema.minLength === 1) {
-      stringRange = 'non-empty';
-    } else {
-      stringRange = `>= ${schema.minLength} characters`;
-    }
-  }
+  const stringRange = humanizeRangeConstraint('characters', schema.minLength, schema.maxLength);
   if (stringRange !== undefined) {
     res.push(stringRange);
+  }
+
+  const arrayRange = humanizeRangeConstraint('items', schema.minItems, schema.maxItems);
+  if (arrayRange !== undefined) {
+    res.push(arrayRange);
   }
 
   let numberRange;
@@ -192,10 +307,16 @@ export function sortByRequired(
     } else if (a.required && !b.required) {
       return -1;
     } else if (a.required && b.required) {
-      return order.indexOf(a.name) > order.indexOf(b.name) ? 1 : -1;
+      return order.indexOf(a.name) - order.indexOf(b.name);
     } else {
       return 0;
     }
+  });
+}
+
+export function sortByField<T extends string>(fields: Array<{ [P in T]: string }>, param: T) {
+  fields.sort((a, b) => {
+    return a[param].localeCompare(b[param]);
   });
 }
 
@@ -235,4 +356,81 @@ export function mergeSimilarMediaTypes(types: Dict<OpenAPIMediaType>): Dict<Open
   return mergedTypes;
 }
 
-export const SECURITY_SCHEMES_SECTION = 'section/Authentication/';
+function expandVariables(url: string, variables: object = {}) {
+  return url.replace(
+    /(?:{)(\w+)(?:})/g,
+    (match, name) => (variables[name] && variables[name].default) || match,
+  );
+}
+
+export function normalizeServers(
+  specUrl: string | undefined,
+  servers: OpenAPIServer[],
+): OpenAPIServer[] {
+  const baseUrl =
+    specUrl === undefined ? (IS_BROWSER ? window.location.href : '') : dirname(specUrl);
+
+  if (servers.length === 0) {
+    return [
+      {
+        url: baseUrl,
+      },
+    ];
+  }
+
+  function normalizeUrl(url: string, variables: object | undefined): string {
+    url = expandVariables(url, variables);
+    return resolveUrl(baseUrl, url);
+  }
+
+  return servers.map(server => {
+    return {
+      ...server,
+      url: normalizeUrl(server.url, server.variables),
+      description: server.description || '',
+    };
+  });
+}
+
+export const SECURITY_DEFINITIONS_COMPONENT_NAME = 'security-definitions';
+export let SECURITY_SCHEMES_SECTION_PREFIX = 'section/Authentication/';
+export function setSecuritySchemePrefix(prefix: string) {
+  SECURITY_SCHEMES_SECTION_PREFIX = prefix;
+}
+
+export const shortenHTTPVerb = verb =>
+  ({
+    delete: 'del',
+    options: 'opts',
+  }[verb] || verb);
+
+export function isRedocExtension(key: string): boolean {
+  const redocExtensions = {
+    'x-circular-ref': true,
+    'x-code-samples': true,
+    'x-displayName': true,
+    'x-examples': true,
+    'x-ignoredHeaderParameters': true,
+    'x-logo': true,
+    'x-nullable': true,
+    'x-servers': true,
+    'x-tagGroups': true,
+    'x-traitTag': true,
+  };
+
+  return key in redocExtensions;
+}
+
+export function extractExtensions(obj: object, showExtensions: string[] | true): Dict<any> {
+  return Object.keys(obj)
+    .filter(key => {
+      if (showExtensions === true) {
+        return key.startsWith('x-') && !isRedocExtension(key);
+      }
+      return key.startsWith('x-') && showExtensions.indexOf(key) > -1;
+    })
+    .reduce((acc, key) => {
+      acc[key] = obj[key];
+      return acc;
+    }, {});
+}

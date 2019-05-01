@@ -1,12 +1,12 @@
 import { observer } from 'mobx-react';
 import * as React from 'react';
 
-import { SECTION_ATTR } from '../../services/MenuStore';
-import { Markdown } from '../Markdown/Markdown';
+import { ExternalDocumentation } from '../ExternalDocumentation/ExternalDocumentation';
+import { AdvancedMarkdown } from '../Markdown/AdvancedMarkdown';
 
-import { H1, MiddlePanel, Row, ShareLink } from '../../common-elements';
+import { H1, H2, MiddlePanel, Row, Section, ShareLink } from '../../common-elements';
 import { ContentItemModel } from '../../services/MenuBuilder';
-import { OperationModel } from '../../services/models';
+import { GroupModel, OperationModel } from '../../services/models';
 import { Operation } from '../Operation/Operation';
 
 @observer
@@ -37,40 +37,56 @@ export class ContentItem extends React.Component<ContentItemProps> {
         content = null;
         break;
       case 'tag':
-        content = <TagItem item={item} />;
-        break;
       case 'section':
-        return null;
+        content = <SectionItem {...this.props} />;
+        break;
       case 'operation':
         content = <OperationItem item={item as any} />;
         break;
       default:
-        throw new Error('Unknown item type');
+        content = <SectionItem {...this.props} />;
     }
 
-    return [
-      <div key="section" {...{ [SECTION_ATTR]: item.id }}>
-        {content}
-      </div>,
-      (item as any).items && <ContentItems key="content" items={(item as any).items} />,
-    ];
+    return (
+      <>
+        {content && (
+          <Section id={item.id} underlined={item.type === 'operation'}>
+            {content}
+          </Section>
+        )}
+        {item.items && <ContentItems items={item.items} />}
+      </>
+    );
   }
 }
 
+const middlePanelWrap = component => <MiddlePanel>{component}</MiddlePanel>;
+
 @observer
-export class TagItem extends React.Component<ContentItemProps> {
+export class SectionItem extends React.Component<ContentItemProps> {
   render() {
-    const { name, description } = this.props.item;
+    const { name, description, externalDocs, level } = this.props.item as GroupModel;
+
+    const Header = level === 2 ? H2 : H1;
     return (
-      <Row>
-        <MiddlePanel>
-          <H1>
-            <ShareLink href={'#' + this.props.item.id} />
-            {name}
-          </H1>
-          {description !== undefined && <Markdown source={description} />}
-        </MiddlePanel>
-      </Row>
+      <>
+        <Row>
+          <MiddlePanel>
+            <Header>
+              <ShareLink to={this.props.item.id} />
+              {name}
+            </Header>
+          </MiddlePanel>
+        </Row>
+        <AdvancedMarkdown source={description || ''} htmlWrap={middlePanelWrap} />
+        {externalDocs && (
+          <Row>
+            <MiddlePanel>
+              <ExternalDocumentation externalDocs={externalDocs} />
+            </MiddlePanel>
+          </Row>
+        )}
+      </>
     );
   }
 }

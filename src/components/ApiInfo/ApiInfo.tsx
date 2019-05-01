@@ -3,8 +3,9 @@ import * as React from 'react';
 
 import { AppStore } from '../../services/AppStore';
 
-import { MiddlePanel, Row } from '../../common-elements/';
-
+import { MiddlePanel, Row, Section } from '../../common-elements/';
+import { ExternalDocumentation } from '../ExternalDocumentation/ExternalDocumentation';
+import { Markdown } from '../Markdown/Markdown';
 import { StyledMarkdownBlock } from '../Markdown/styled.elements';
 import {
   ApiHeader,
@@ -20,9 +21,16 @@ export interface ApiInfoProps {
 
 @observer
 export class ApiInfo extends React.Component<ApiInfoProps> {
+  handleDownloadClick = e => {
+    if (!e.target.href) {
+      e.target.href = this.props.store.spec.info.downloadLink;
+    }
+  };
+
   render() {
     const { store } = this.props;
     const { info, externalDocs } = store.spec;
+    const hideDownloadButton = store.options.hideDownloadButton;
 
     const downloadFilename = info.downloadFileName;
     const downloadLink = info.downloadLink;
@@ -62,39 +70,47 @@ export class ApiInfo extends React.Component<ApiInfoProps> {
       )) ||
       null;
 
-    return (
-      <Row>
-        <MiddlePanel className="api-info">
-          <ApiHeader>
-            {info.title} <span>({info.version})</span>
-          </ApiHeader>
-          {downloadLink && (
-            <p>
-              Download OpenAPI specification:
-              <DownloadButton download={downloadFilename} target="_blank" href={downloadLink}>
-                Download
-              </DownloadButton>
-            </p>
-          )}
-          <StyledMarkdownBlock>
-            {((info.license || info.contact || info.termsOfService) && (
-              <InfoSpanBoxWrap>
-                <InfoSpanBox>
-                  {email} {website} {license} {terms}
-                </InfoSpanBox>
-              </InfoSpanBoxWrap>
-            )) ||
-              null}
+    const version =
+      (info.version && (
+        <span>({info.version})</span>
+      )) ||
+      null;
 
-            {(externalDocs && (
+    return (
+      <Section>
+        <Row>
+          <MiddlePanel className="api-info">
+            <ApiHeader>
+              {info.title} {version}
+            </ApiHeader>
+            {!hideDownloadButton && (
               <p>
-                <a href={externalDocs.url}>{externalDocs.description || externalDocs.url}</a>
+                Download OpenAPI specification:
+                <DownloadButton
+                  download={downloadFilename}
+                  target="_blank"
+                  href={downloadLink}
+                  onClick={this.handleDownloadClick}
+                >
+                  Download
+                </DownloadButton>
               </p>
-            )) ||
-              null}
-          </StyledMarkdownBlock>
-        </MiddlePanel>
-      </Row>
+            )}
+            <StyledMarkdownBlock>
+              {((info.license || info.contact || info.termsOfService) && (
+                <InfoSpanBoxWrap>
+                  <InfoSpanBox>
+                    {email} {website} {license} {terms}
+                  </InfoSpanBox>
+                </InfoSpanBoxWrap>
+              )) ||
+                null}
+            </StyledMarkdownBlock>
+            <Markdown source={store.spec.info.description} />
+            {externalDocs && <ExternalDocumentation externalDocs={externalDocs} />}
+          </MiddlePanel>
+        </Row>
+      </Section>
     );
   }
 }

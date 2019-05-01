@@ -1,6 +1,6 @@
 import { action, observable } from 'mobx';
 
-import { OpenAPISchema, Referenced } from '../../types';
+import { OpenAPIExternalDocumentation, OpenAPISchema, Referenced } from '../../types';
 
 import { OpenAPIParser } from '../OpenAPIParser';
 import { RedocNormalizedOptions } from '../RedocNormalizedOptions';
@@ -9,22 +9,25 @@ import { FieldModel } from './Field';
 import { MergedOpenAPISchema } from '../';
 import {
   detectType,
+  extractExtensions,
   humanizeConstraints,
   isNamedDefinition,
   isPrimitiveType,
   JsonPointer,
+  sortByField,
   sortByRequired,
 } from '../../utils/';
 
 // TODO: refactor this model, maybe use getters instead of copying all the values
 export class SchemaModel {
-  _$ref: string;
+  pointer: string;
 
   type: string;
   displayType: string;
   typePrefix: string = '';
   title: string;
   description: string;
+  externalDocs?: OpenAPIExternalDocumentation;
 
   isPrimitive: boolean;
   isCircular: boolean = false;
@@ -48,10 +51,12 @@ export class SchemaModel {
   oneOf?: SchemaModel[];
   oneOfType: string;
   discriminatorProp: string;
-  @observable activeOneOf: number = 0;
+  @observable
+  activeOneOf: number = 0;
 
   rawSchema: OpenAPISchema;
   schema: MergedOpenAPISchema;
+  extensions?: Dict<any>;
 
   /**
    * @param isChild if schema discriminator Child
@@ -60,20 +65,20 @@ export class SchemaModel {
   constructor(
     parser: OpenAPIParser,
     schemaOrRef: Referenced<OpenAPISchema>,
-    $ref: string,
+    pointer: string,
     private options: RedocNormalizedOptions,
     isChild: boolean = false,
   ) {
-    this._$ref = schemaOrRef.$ref || $ref || '';
+    this.pointer = schemaOrRef.$ref || pointer || '';
     this.rawSchema = parser.deref(schemaOrRef);
-    this.schema = parser.mergeAllOf(this.rawSchema, this._$ref, isChild);
+    this.schema = parser.mergeAllOf(this.rawSchema, this.pointer, isChild);
     this.init(parser, isChild);
 
     parser.exitRef(schemaOrRef);
+    parser.exitParents(this.schema);
 
-    for (const parent$ref of this.schema.parentRefs || []) {
-      // exit all the refs visited during allOf traverse
-      parser.exitRef({ $ref: parent$ref });
+    if (options.showExtensions) {
+      this.extensions = extractExtensions(this.schema, options.showExtensions);
     }
   }
 
@@ -91,7 +96,7 @@ export class SchemaModel {
     this.isCircular = schema['x-circular-ref'];
 
     this.title =
-      schema.title || (isNamedDefinition(this._$ref) && JsonPointer.baseName(this._$ref)) || '';
+      schema.title || (isNamedDefinition(this.pointer) && JsonPointer.baseName(this.pointer)) || '';
     this.description = schema.description || '';
     this.type = schema.type || detectType(schema);
     this.format = schema.format;
@@ -100,11 +105,12 @@ export class SchemaModel {
     this.example = schema.example;
     this.deprecated = !!schema.deprecated;
     this.pattern = schema.pattern;
+    this.externalDocs = schema.externalDocs;
 
     this.constraints = humanizeConstraints(schema);
     this.displayType = this.type;
     this.displayFormat = this.format;
-    this.isPrimitive = isPrimitiveType(schema);
+    this.isPrimitive = isPrimitiveType(schema, this.type);
     this.default = schema.default;
     this.readOnly = !!schema.readOnly;
     this.writeOnly = !!schema.writeOnly;
@@ -123,7 +129,7 @@ export class SchemaModel {
       this.oneOfType = 'One of';
       if (schema.anyOf !== undefined) {
         console.warn(
-          `oneOf and anyOf are not supported on the same level. Skipping anyOf at ${this._$ref}`,
+          `oneOf and anyOf are not supported on the same level. Skipping anyOf at ${this.pointer}`,
         );
       }
       return;
@@ -136,9 +142,9 @@ export class SchemaModel {
     }
 
     if (this.type === 'object') {
-      this.fields = buildFields(parser, schema, this._$ref, this.options);
+      this.fields = buildFields(parser, schema, this.pointer, this.options);
     } else if (this.type === 'array' && schema.items) {
-      this.items = new SchemaModel(parser, schema.items, this._$ref + '/items', this.options);
+      this.items = new SchemaModel(parser, schema.items, this.pointer + '/items', this.options);
       this.displayType = this.items.displayType;
       this.displayFormat = this.items.format;
       this.typePrefix = this.items.typePrefix + 'Array of ';
@@ -154,19 +160,49 @@ export class SchemaModel {
   }
 
   private initOneOf(oneOf: OpenAPISchema[], parser: OpenAPIParser) {
-    this.oneOf = oneOf!.map(
-      (variant, idx) =>
-        new SchemaModel(
-          parser,
-          {
-            // merge base schema into each of oneOf's subschemas
-            allOf: [variant, { ...this.schema, oneOf: undefined, anyOf: undefined }],
-          } as OpenAPISchema,
-          this._$ref + '/oneOf/' + idx,
-          this.options,
-        ),
-    );
-    this.displayType = this.oneOf.map(schema => schema.displayType).join(' or ');
+    this.oneOf = oneOf!.map((variant, idx) => {
+      const derefVariant = parser.deref(variant);
+
+      const merged = parser.mergeAllOf(derefVariant, this.pointer + '/oneOf/' + idx);
+
+      // try to infer title
+      const title =
+        isNamedDefinition(variant.$ref) && !merged.title
+          ? JsonPointer.baseName(variant.$ref)
+          : merged.title;
+
+      const schema = new SchemaModel(
+        parser,
+        // merge base schema into each of oneOf's subschemas
+        {
+          // variant may already have allOf so merge it to not get overwritten
+          ...merged,
+          title,
+          allOf: [{ ...this.schema, oneOf: undefined, anyOf: undefined }],
+        } as OpenAPISchema,
+        this.pointer + '/oneOf/' + idx,
+        this.options,
+      );
+
+      parser.exitRef(variant);
+      // each oneOf should be independent so exiting all the parent refs
+      // otherwise it will cause false-positive recursive detection
+      parser.exitParents(merged);
+
+      return schema;
+    });
+
+    this.displayType = this.oneOf
+      .map(schema => {
+        let name =
+          schema.typePrefix +
+          (schema.title ? `${schema.title} (${schema.displayType})` : schema.displayType);
+        if (name.indexOf(' or ') > -1) {
+          name = `(${name})`;
+        }
+        return name;
+      })
+      .join(' or ');
   }
 
   private initDiscriminator(
@@ -177,7 +213,7 @@ export class SchemaModel {
   ) {
     const discriminator = getDiscriminator(schema)!;
     this.discriminatorProp = discriminator.propertyName;
-    const derived = parser.findDerived([...(schema.parentRefs || []), this._$ref]);
+    const derived = parser.findDerived([...(schema.parentRefs || []), this.pointer]);
 
     if (schema.oneOf) {
       for (const variant of schema.oneOf) {
@@ -240,18 +276,22 @@ function buildFields(
     );
   });
 
+  if (options.sortPropsAlphabetically) {
+    sortByField(fields, 'name');
+  }
   if (options.requiredPropsFirst) {
-    sortByRequired(fields, schema.required);
+    // if not sort alphabetically sort in the order from required keyword
+    sortByRequired(fields, !options.sortPropsAlphabetically ? schema.required : undefined);
   }
 
-  if (typeof additionalProps === 'object') {
+  if (typeof additionalProps === 'object' || additionalProps === true) {
     fields.push(
       new FieldModel(
         parser,
         {
           name: 'property name *',
           required: false,
-          schema: additionalProps,
+          schema: additionalProps === true ? {} : additionalProps,
           kind: 'additionalProperties',
         },
         $ref + '/additionalProperties',

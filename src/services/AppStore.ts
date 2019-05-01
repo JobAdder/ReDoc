@@ -1,8 +1,8 @@
-import { observe } from 'mobx';
+import { Lambda, observe } from 'mobx';
 
 import { OpenAPISpec } from '../types';
 import { loadAndBundleSpec } from '../utils/loadAndBundleSpec';
-import { HistoryService } from './HistoryService';
+import { history } from './HistoryService';
 import { MarkerService } from './MarkerService';
 import { MenuStore } from './MenuStore';
 import { SpecStore } from './models';
@@ -10,12 +10,15 @@ import { RedocNormalizedOptions, RedocRawOptions } from './RedocNormalizedOption
 import { ScrollService } from './ScrollService';
 import { SearchStore } from './SearchStore';
 
+import { SecurityDefs } from '../components/SecuritySchemes/SecuritySchemes';
+import { SECURITY_DEFINITIONS_COMPONENT_NAME } from '../utils/openapi';
+
 export interface StoreState {
   menu: {
     activeItemIdx: number;
   };
   spec: {
-    url: string;
+    url?: string;
     data: any;
   };
   searchIndex: any;
@@ -41,7 +44,9 @@ export class AppStore {
     const inst = new AppStore(state.spec.data, state.spec.url, state.options, false);
     inst.menu.activeItemIdx = state.menu.activeItemIdx || 0;
     inst.menu.activate(inst.menu.flatItems[inst.menu.activeItemIdx]);
-    inst.search.load(state.searchIndex);
+    if (!inst.options.disableSearch) {
+      inst.search!.load(state.searchIndex);
+    }
     return inst;
   }
 
@@ -49,11 +54,11 @@ export class AppStore {
   spec: SpecStore;
   rawOptions: RedocRawOptions;
   options: RedocNormalizedOptions;
-  search: SearchStore<string>;
+  search?: SearchStore<string>;
   marker = new MarkerService();
 
   private scroll: ScrollService;
-  private disposer;
+  private disposer: Lambda | null = null;
 
   constructor(
     spec: OpenAPISpec,
@@ -62,31 +67,60 @@ export class AppStore {
     createSearchIndex: boolean = true,
   ) {
     this.rawOptions = options;
-    this.options = new RedocNormalizedOptions(options);
+    this.options = new RedocNormalizedOptions(options, DEFAULT_OPTIONS);
     this.scroll = new ScrollService(this.options);
 
     // update position statically based on hash (in case of SSR)
-    MenuStore.updateOnHash(HistoryService.hash, this.scroll);
+    MenuStore.updateOnHistory(history.currentId, this.scroll);
 
     this.spec = new SpecStore(spec, specUrl, this.options);
-    this.menu = new MenuStore(this.spec, this.scroll);
+    this.menu = new MenuStore(this.spec, this.scroll, history);
 
-    this.search = new SearchStore();
-    if (createSearchIndex) {
-      this.search.indexItems(this.menu.items);
+    if (!this.options.disableSearch) {
+      this.search = new SearchStore();
+      if (createSearchIndex) {
+        this.search.indexItems(this.menu.items);
+      }
+
+      this.disposer = observe(this.menu, 'activeItemIdx', change => {
+        this.updateMarkOnMenu(change.newValue as number);
+      });
     }
-
-    this.disposer = observe(this.menu, 'activeItemIdx', change => {
-      this.updateMarkOnMenu(change.newValue as number);
-    });
   }
 
   onDidMount() {
-    this.menu.updateOnHash();
+    this.menu.updateOnHistory();
     this.updateMarkOnMenu(this.menu.activeItemIdx);
   }
 
-  updateMarkOnMenu(idx: number) {
+  dispose() {
+    this.scroll.dispose();
+    this.menu.dispose();
+    if (this.disposer != null) {
+      this.disposer();
+    }
+  }
+
+  /**
+   * serializes store
+   * **SUPER HACKY AND NOT OPTIMAL IMPLEMENTATION**
+   */
+  // TODO: improve
+  async toJS(): Promise<StoreState> {
+    return {
+      menu: {
+        activeItemIdx: this.menu.activeItemIdx,
+      },
+      spec: {
+        url: this.spec.parser.specUrl,
+        data: this.spec.parser.spec,
+      },
+      searchIndex: this.search ? await this.search.toJS() : undefined,
+      options: this.rawOptions,
+    };
+  }
+
+  private updateMarkOnMenu(idx: number) {
     const start = Math.max(0, idx);
     const end = Math.min(this.menu.flatItems.length, start + 5);
 
@@ -107,29 +141,15 @@ export class AppStore {
     this.marker.addOnly(elements);
     this.marker.mark();
   }
-
-  dispose() {
-    this.scroll.dispose();
-    this.menu.dispose();
-    this.disposer();
-  }
-
-  /**
-   * serializes store
-   * **SUPER HACKY AND NOT OPTIMAL IMPLEMENTATION**
-   */
-  // TODO:
-  async toJS(): Promise<StoreState> {
-    return {
-      menu: {
-        activeItemIdx: this.menu.activeItemIdx,
-      },
-      spec: {
-        url: this.spec.parser.specUrl,
-        data: this.spec.parser.spec,
-      },
-      searchIndex: await this.search.toJS(),
-      options: this.rawOptions,
-    };
-  }
 }
+
+const DEFAULT_OPTIONS: RedocRawOptions = {
+  allowedMdComponents: {
+    [SECURITY_DEFINITIONS_COMPONENT_NAME]: {
+      component: SecurityDefs,
+      propsSelector: (store: AppStore) => ({
+        securitySchemes: store.spec.securitySchemes,
+      }),
+    },
+  },
+};

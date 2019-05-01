@@ -1,3 +1,279 @@
+# [2.0.0-rc.4](https://github.com/Rebilly/ReDoc/compare/v2.0.0-rc.3...v2.0.0-rc.4) (2019-03-15)
+
+
+### Bug Fixes
+
+* move swagger2openapi to deps because of missing transitive deps ([ed9b878](https://github.com/Rebilly/ReDoc/commit/ed9b878))
+
+
+### Features
+
+* display requestBody description [#833](https://github.com/Rebilly/ReDoc/issues/833) ([#838](https://github.com/Rebilly/ReDoc/issues/838)) ([56ca371](https://github.com/Rebilly/ReDoc/commit/56ca371))
+
+
+# [2.0.0-rc.3](https://github.com/Rebilly/ReDoc/compare/v2.0.0-rc.2...v2.0.0-rc.3) (2019-03-15)
+
+
+### Bug Fixes
+
+* add extra deref step for anyOf/oneOf variants ([d81b631](https://github.com/Rebilly/ReDoc/commit/d81b631)), closes [#810](https://github.com/Rebilly/ReDoc/issues/810)
+* duplicate keys in request samples ([3ce5bff](https://github.com/Rebilly/ReDoc/commit/3ce5bff)), closes [#815](https://github.com/Rebilly/ReDoc/issues/815)
+* escape backslashes in string literals ([#823](https://github.com/Rebilly/ReDoc/issues/823)) ([70faca1](https://github.com/Rebilly/ReDoc/commit/70faca1)), closes [#822](https://github.com/Rebilly/ReDoc/issues/822)
+* escape quotes in string values ([0473165](https://github.com/Rebilly/ReDoc/commit/0473165)), closes [#882](https://github.com/Rebilly/ReDoc/issues/882)
+* pin lunr version in ReDoc ([178ff4c](https://github.com/Rebilly/ReDoc/commit/178ff4c)), closes [#844](https://github.com/Rebilly/ReDoc/issues/844)
+* set last section min-height ([4dd79cd](https://github.com/Rebilly/ReDoc/commit/4dd79cd)), closes [#820](https://github.com/Rebilly/ReDoc/issues/820)
+
+
+### Features
+
+* support externalValue for examples ([2cdfcd2](https://github.com/Rebilly/ReDoc/commit/2cdfcd2)), closes [#551](https://github.com/Rebilly/ReDoc/issues/551) [#840](https://github.com/Rebilly/ReDoc/issues/840)
+* **cli:** Add templateOptions param to pass additional data to custom template ([#792](https://github.com/Rebilly/ReDoc/issues/792)) ([4e8ee03](https://github.com/Rebilly/ReDoc/commit/4e8ee03))
+
+
+
+# [2.0.0-rc.2](https://github.com/Rebilly/ReDoc/compare/v2.0.0-rc.1...v2.0.0-rc.2) (2019-01-27)
+
+
+### Bug Fixes
+
+* make padding for md code blocks and code samples consistent ([007752d](https://github.com/Rebilly/ReDoc/commit/007752d))
+* make syntax highlighting for md js code blocks same as for payload samples ([d197c0f](https://github.com/Rebilly/ReDoc/commit/d197c0f))
+* Only display API version if present ([#773](https://github.com/Rebilly/ReDoc/issues/773)) ([fb3cb36](https://github.com/Rebilly/ReDoc/commit/fb3cb36))
+
+
+
+# [2.0.0-rc.1](https://github.com/Rebilly/ReDoc/compare/v2.0.0-rc.0...v2.0.0-rc.1) (2019-01-17)
+
+
+### Bug Fixes
+
+* allow docker container serving under non-root URLs ([#731](https://github.com/Rebilly/ReDoc/issues/731)) ([cfb6f0f](https://github.com/Rebilly/ReDoc/commit/cfb6f0f)), closes [#730](https://github.com/Rebilly/ReDoc/issues/730)
+* make example/defaults badge consistent with code blocks ([fa39ce4](https://github.com/Rebilly/ReDoc/commit/fa39ce4))
+* pattern constrain spacing ([c7436f2](https://github.com/Rebilly/ReDoc/commit/c7436f2))
+* sidebar navigation issues when scrollYOffset is float number ([c04f387](https://github.com/Rebilly/ReDoc/commit/c04f387)), closes [#748](https://github.com/Rebilly/ReDoc/issues/748)
+
+
+
+# [2.0.0-rc.0](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.41...v2.0.0-rc.0) (2018-11-27)
+
+
+### Bug Fixes
+
+* false-positive recursive detection with oneOf ([59eaa8d](https://github.com/Rebilly/ReDoc/commit/59eaa8d)), closes [#723](https://github.com/Rebilly/ReDoc/issues/723) [#585](https://github.com/Rebilly/ReDoc/issues/585)
+* fix hideHostname also hiding basePath ([b5f3224](https://github.com/Rebilly/ReDoc/commit/b5f3224)), closes [#677](https://github.com/Rebilly/ReDoc/issues/677)
+* fix spacing with nested markdown lists ([f2f6909](https://github.com/Rebilly/ReDoc/commit/f2f6909)), closes [#718](https://github.com/Rebilly/ReDoc/issues/718)
+* improve scrolling performance in Chrome with non-wrapped json examples ([a69c402](https://github.com/Rebilly/ReDoc/commit/a69c402))
+* nested oneOf button spacing ([3673720](https://github.com/Rebilly/ReDoc/commit/3673720)), closes [#719](https://github.com/Rebilly/ReDoc/issues/719)
+* onLoaded callback not run on spec error ([e77df0c](https://github.com/Rebilly/ReDoc/commit/e77df0c)), closes [#690](https://github.com/Rebilly/ReDoc/issues/690)
+* theme improvments by [@stasiukanya](https://github.com/stasiukanya) ([e2d0cd5](https://github.com/Rebilly/ReDoc/commit/e2d0cd5))
+* **cli:** old peer dependency issue with styled-components ([#699](https://github.com/Rebilly/ReDoc/issues/699)) ([9e2853c](https://github.com/Rebilly/ReDoc/commit/9e2853c))
+
+
+### Features
+
+* Add feature to specify href for logo explicitly ([#645](https://github.com/Rebilly/ReDoc/issues/645)) ([87fd7d7](https://github.com/Rebilly/ReDoc/commit/87fd7d7))
+* add support for markdown in Server Object ([155d214](https://github.com/Rebilly/ReDoc/commit/155d214))
+* Add support for minLength and maxLength constraint humanization ([#700](https://github.com/Rebilly/ReDoc/issues/700)) ([f40568b](https://github.com/Rebilly/ReDoc/commit/f40568b)), closes [#42](https://github.com/Rebilly/ReDoc/issues/42) [/github.com/Rebilly/ReDoc/issues/42#issuecomment-371883853](https://github.com//github.com/Rebilly/ReDoc/issues/42/issues/issuecomment-371883853)
+
+
+
+<a name="2.0.0-alpha.41"></a>
+# [2.0.0-alpha.41](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.40...v2.0.0-alpha.41) (2018-10-18)
+
+
+### Bug Fixes
+
+* add null check in dispose method ([#675](https://github.com/Rebilly/ReDoc/issues/675)) ([6b7c5b7](https://github.com/Rebilly/ReDoc/commit/6b7c5b7))
+* extensionHook not being used ([a4a4013](https://github.com/Rebilly/ReDoc/commit/a4a4013)), closes [#665](https://github.com/Rebilly/ReDoc/issues/665)
+* fix issue with broken markdown caused by marked bug ([70cf293](https://github.com/Rebilly/ReDoc/commit/70cf293))
+
+### Peer dependencies updates
+
+* ReDoc now requires `styled-components@^4.0.1` to be installed if used as React component
+
+
+
+<a name="2.0.0-alpha.40"></a>
+# [2.0.0-alpha.40](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.39...v2.0.0-alpha.40) (2018-10-05)
+
+
+### Bug Fixes
+
+* **cli:** add styled-components to dependencies ([2d63fa0](https://github.com/Rebilly/ReDoc/commit/2d63fa0))
+* allOf inside oneOf overwritten and not rendered ([fe3383d](https://github.com/Rebilly/ReDoc/commit/fe3383d)), closes [#660](https://github.com/Rebilly/ReDoc/issues/660)
+* fix panel paddings on small screens ([f39fc98](https://github.com/Rebilly/ReDoc/commit/f39fc98))
+* minor media print improvements ([fbcec82](https://github.com/Rebilly/ReDoc/commit/fbcec82))
+* remove extra-padding caused by empty group sections ([974bc7d](https://github.com/Rebilly/ReDoc/commit/974bc7d))
+* server overriding didn't work on Path Item object ([355764d](https://github.com/Rebilly/ReDoc/commit/355764d)), closes [#656](https://github.com/Rebilly/ReDoc/issues/656)
+
+
+### Features
+
+* new option `onlyRequiredInSamples` ([#646](https://github.com/Rebilly/ReDoc/issues/646)) ([10bca66](https://github.com/Rebilly/ReDoc/commit/10bca66))
+* new option `sortPropsAlphabetically` ([b87cf0d](https://github.com/Rebilly/ReDoc/commit/b87cf0d))
+* new theme options `spacing.sectionHorizontal` and `spacing.sectionVertical` ([505463f](https://github.com/Rebilly/ReDoc/commit/505463f))
+* turn off code-blocks wrapping (enable using `theme.typography.code.wrap: true`) ([393681b](https://github.com/Rebilly/ReDoc/commit/393681b)), closes [#658](https://github.com/Rebilly/ReDoc/issues/658)
+
+
+
+<a name="2.0.0-alpha.39"></a>
+# [2.0.0-alpha.39](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.38...v2.0.0-alpha.39) (2018-09-14)
+
+
+### Bug Fixes
+
+* Increase badge size slightly so that "PATCH" method fits inside ([#632](https://github.com/Rebilly/ReDoc/issues/632)) ([4b3b5ba](https://github.com/Rebilly/ReDoc/commit/4b3b5ba))
+
+
+### Features
+
+* externalDocumentation rendered for tags, operations and schema fields ([#595](https://github.com/Rebilly/ReDoc/issues/595)) ([893c83e](https://github.com/Rebilly/ReDoc/commit/893c83e)), closes [#550](https://github.com/Rebilly/ReDoc/issues/550)
+
+
+
+<a name="2.0.0-alpha.38"></a>
+# [2.0.0-alpha.38](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.37...v2.0.0-alpha.38) (2018-08-24)
+
+
+### Bug Fixes
+
+* addd indent to array schema internals ([865f3ce](https://github.com/Rebilly/ReDoc/commit/865f3ce))
+* fix oneOf/anyOf titles ([39b930d](https://github.com/Rebilly/ReDoc/commit/39b930d)), closes [#618](https://github.com/Rebilly/ReDoc/issues/618) [#621](https://github.com/Rebilly/ReDoc/issues/621)
+
+
+
+<a name="2.0.0-alpha.37"></a>
+# [2.0.0-alpha.37](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.36...v2.0.0-alpha.37) (2018-08-22)
+
+
+### Bug Fixes
+
+* do not inherit title in allOf ([720e282](https://github.com/Rebilly/ReDoc/commit/720e282)), closes [#601](https://github.com/Rebilly/ReDoc/issues/601)
+* fix crash on empty media object ([fb21212](https://github.com/Rebilly/ReDoc/commit/fb21212)), closes [#608](https://github.com/Rebilly/ReDoc/issues/608)
+* make http badges font-based instead of inline png ([5d84bd4](https://github.com/Rebilly/ReDoc/commit/5d84bd4))
+* use correct parent section for security definition ([f903406](https://github.com/Rebilly/ReDoc/commit/f903406))
+
+
+
+<a name="2.0.0-alpha.36"></a>
+# [2.0.0-alpha.36](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.35...v2.0.0-alpha.36) (2018-08-11)
+
+
+### Bug Fixes
+
+* broken rendering of code blocks with language in markdown ([8218a26](https://github.com/Rebilly/ReDoc/commit/8218a26))
+* broken rendering of headings with regexp characters ([e660517](https://github.com/Rebilly/ReDoc/commit/e660517))
+
+
+
+<a name="2.0.0-alpha.35"></a>
+# [2.0.0-alpha.35](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.34...v2.0.0-alpha.35) (2018-08-09)
+
+
+### Bug Fixes
+
+* crash on any backticks code block without lang specified ([58ae668](https://github.com/Rebilly/ReDoc/commit/58ae668))
+* fix auth requirements font size ([d13fe13](https://github.com/Rebilly/ReDoc/commit/d13fe13))
+
+
+<a name="2.0.0-alpha.34"></a>
+# [2.0.0-alpha.34](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.33...v2.0.0-alpha.34) (2018-08-08)
+
+
+### Bug Fixes
+
+* add some spacing between operation description and parameters ([597688e](https://github.com/Rebilly/ReDoc/commit/597688e))
+* description is not rendered if doesn't containt markdown headings ([90ed717](https://github.com/Rebilly/ReDoc/commit/90ed717)), closes [#591](https://github.com/Rebilly/ReDoc/issues/591)
+* download button downloads index.html instead of spec with CLI ([334f904](https://github.com/Rebilly/ReDoc/commit/334f904)), closes [#594](https://github.com/Rebilly/ReDoc/issues/594)
+* fix Authentication section is not rendered ([2ecc8bc](https://github.com/Rebilly/ReDoc/commit/2ecc8bc)), closes [#590](https://github.com/Rebilly/ReDoc/issues/590)
+* fix linebreaks in multiparagraph field descriptions ([8fb9cd6](https://github.com/Rebilly/ReDoc/commit/8fb9cd6))
+* preserve md heading level in description ([23559fb](https://github.com/Rebilly/ReDoc/commit/23559fb))
+* render additionalProperties set to true ([#597](https://github.com/Rebilly/ReDoc/issues/597)) ([f70ac08](https://github.com/Rebilly/ReDoc/commit/f70ac08)), closes [#596](https://github.com/Rebilly/ReDoc/issues/596)
+* schemes without type: object are not expandable ([97e1620](https://github.com/Rebilly/ReDoc/commit/97e1620)), closes [#599](https://github.com/Rebilly/ReDoc/issues/599)
+
+
+### Features
+
+* Add x-logo alt text support ([#584](https://github.com/Rebilly/ReDoc/issues/584)) ([568ce74](https://github.com/Rebilly/ReDoc/commit/568ce74)), closes [#546](https://github.com/Rebilly/ReDoc/issues/546)
+* support label for x-code-samples ([00bd966](https://github.com/Rebilly/ReDoc/commit/00bd966)), closes [#586](https://github.com/Rebilly/ReDoc/issues/586)
+
+
+
+<a name="2.0.0-alpha.33"></a>
+# [2.0.0-alpha.33](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.32...v2.0.0-alpha.33) (2018-07-31)
+
+
+### Bug Fixes
+
+* long endpoint url overflow ([d99e918](https://github.com/Rebilly/ReDoc/commit/d99e918))
+* allow word-break in code strings in md ([15dfe44](https://github.com/Rebilly/ReDoc/commit/15dfe44))
+* show examples for response headers ([ba22b1e](https://github.com/Rebilly/ReDoc/commit/ba22b1e))
+
+<a name="2.0.0-alpha.32"></a>
+# [2.0.0-alpha.32](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.31...v2.0.0-alpha.32) (2018-07-26)
+
+
+### Bug Fixes
+
+* **cli:** add mobx to dependencies ([75ced44](https://github.com/Rebilly/ReDoc/commit/75ced44))
+* fix  resolving issue by upgrading to json-schema-ref-parser@5.1.1 ([0045958](https://github.com/Rebilly/ReDoc/commit/0045958)), closes [#541](https://github.com/Rebilly/ReDoc/issues/541)
+* remove break-all from code samples ([d74578d](https://github.com/Rebilly/ReDoc/commit/d74578d))
+* wrong display when combining multiple auth requirements ([f96c481](https://github.com/Rebilly/ReDoc/commit/f96c481)), closes [#577](https://github.com/Rebilly/ReDoc/issues/577)
+
+
+
+<a name="2.0.0-alpha.31"></a>
+# [2.0.0-alpha.31](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.30...v2.0.0-alpha.31) (2018-07-23)
+
+
+### Bug Fixes
+
+* server url contains spec name if not specified in the spec ([b41b181](https://github.com/Rebilly/ReDoc/commit/b41b181))
+
+
+### Features
+
+* simple variable substitution support ([9d6b30c](https://github.com/Rebilly/ReDoc/commit/9d6b30c)), closes [#565](https://github.com/Rebilly/ReDoc/issues/565)
+
+
+
+<a name="2.0.0-alpha.30"></a>
+# [2.0.0-alpha.30](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.29...v2.0.0-alpha.30) (2018-07-19)
+
+
+### Bug Fixes
+
+* fix usage with CRA by transpiling swagger2openapi deps ([6473e62](https://github.com/Rebilly/ReDoc/commit/6473e62)), closes [#566](https://github.com/Rebilly/ReDoc/issues/566)
+
+
+### Features
+
+* theme reshape and new options ([58bddc8](https://github.com/Rebilly/ReDoc/commit/58bddc8))
+
+
+
+<a name="2.0.0-alpha.29"></a>
+# [2.0.0-alpha.29](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.28...v2.0.0-alpha.29) (2018-07-18)
+
+
+### Bug Fixes
+
+* **cli:** cli output crashes if script closing tag is in the spec ([76906eb](https://github.com/Rebilly/ReDoc/commit/76906eb)), closes [#563](https://github.com/Rebilly/ReDoc/issues/563)
+* different output of cli bundle and redoc ([89aa754](https://github.com/Rebilly/ReDoc/commit/89aa754)), closes [#547](https://github.com/Rebilly/ReDoc/issues/547)
+* fix broken link in CLI help ([bab3e7d](https://github.com/Rebilly/ReDoc/commit/bab3e7d)), closes [#559](https://github.com/Rebilly/ReDoc/issues/559)
+* fix Download button url when spec as object was provided ([c35925a](https://github.com/Rebilly/ReDoc/commit/c35925a)), closes [#462](https://github.com/Rebilly/ReDoc/issues/462) [#540](https://github.com/Rebilly/ReDoc/issues/540)
+* fix non-scalar query/path/header params are not expandable ([dcca44a](https://github.com/Rebilly/ReDoc/commit/dcca44a)), closes [#561](https://github.com/Rebilly/ReDoc/issues/561)
+* properly host oneOf inside allOf ([7e5b6d9](https://github.com/Rebilly/ReDoc/commit/7e5b6d9)), closes [#507](https://github.com/Rebilly/ReDoc/issues/507) [#528](https://github.com/Rebilly/ReDoc/issues/528)
+* regression - broken urls for operations without operationId ([c0c44bc](https://github.com/Rebilly/ReDoc/commit/c0c44bc))
+* use original tag name when slugified one is not valid ([#553](https://github.com/Rebilly/ReDoc/issues/553)) ([8817d9c](https://github.com/Rebilly/ReDoc/commit/8817d9c))
+
+
+### Features
+
+* new option disableSearch ([d4ab5ad](https://github.com/Rebilly/ReDoc/commit/d4ab5ad))
+
+
+
 <a name="2.0.0-alpha.28"></a>
 # [2.0.0-alpha.28](https://github.com/Rebilly/ReDoc/compare/v2.0.0-alpha.27...v2.0.0-alpha.28) (2018-06-29)
 
